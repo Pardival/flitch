@@ -34,6 +34,7 @@ final class AppController {
     lazy var connector = BrainConnector(app: self)
     lazy var preview = VoicePreview(app: self)
     lazy var onboarding = OnboardingWindow(app: self)
+    let updater = Updater()
 
     /// First idle frame, for the settings header and onboarding.
     var iconImage: CGImage? { try? SpriteSheet(character: character).frame("idle", 0) }

@@ -14,6 +14,10 @@ struct GeneralPane: View {
         self.settings = app.settings
     }
 
+    private var automaticUpdates: Binding<Bool> {
+        Binding(get: { app.updater.automaticallyChecks }, set: { app.updater.automaticallyChecks = $0 })
+    }
+
     var body: some View {
         Form {
             Section {
@@ -65,6 +69,14 @@ struct GeneralPane: View {
                 }
                 Toggle("Launch at login", isOn: $settings.launchAtLogin)
                     .onChange(of: settings.launchAtLogin) { _, on in LaunchAtLogin.set(on) }
+            }
+            Section("Updates") {
+                if app.updater.isAvailable {
+                    Toggle("Check for updates automatically", isOn: automaticUpdates)
+                    Button("Check for Updates…") { app.updater.checkForUpdates() }
+                } else {
+                    Text("Updates are off in development builds.").foregroundStyle(.secondary)
+                }
             }
             Section("Advanced") {
                 Toggle(isOn: $settings.showTimings) {
