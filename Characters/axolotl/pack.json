@@ -1,0 +1,147 @@
+{
+  "formatVersion": 1,
+  "id": "axolotl",
+  "name": "Axo the axolotl",
+  "version": "1.0.0",
+  "author": "The Flitch contributors",
+  "license": "CC-BY-4.0",
+  "frame": {
+    "width": 32,
+    "height": 32
+  },
+  "displayScale": 3,
+  "anchors": {
+    "foot": [
+      16,
+      31
+    ],
+    "bubble": [
+      26,
+      6
+    ],
+    "peekEdge": [
+      16,
+      22
+    ]
+  },
+  "animations": {
+    "idle": {
+      "file": "idle.png",
+      "frames": 6,
+      "fps": 3,
+      "loop": true
+    },
+    "listen": {
+      "file": "listen.png",
+      "frames": 4,
+      "fps": 4,
+      "loop": true
+    },
+    "think": {
+      "file": "think.png",
+      "frames": 8,
+      "fps": 10,
+      "loop": true,
+      "events": {
+        "5": "tap"
+      }
+    },
+    "talk": {
+      "file": "talk.png",
+      "frames": 4,
+      "fps": 0,
+      "loop": true,
+      "driver": "audioLevel"
+    },
+    "happy": {
+      "file": "happy.png",
+      "frames": 6,
+      "fps": 12,
+      "loop": false
+    },
+    "wave": {
+      "file": "wave.png",
+      "frames": 4,
+      "fps": 8,
+      "loop": true
+    },
+    "sleep": {
+      "file": "sleep.png",
+      "frames": 4,
+      "fps": 1.5,
+      "loop": true
+    },
+    "walk": {
+      "file": "walk.png",
+      "frames": 6,
+      "fps": 10,
+      "loop": true
+    },
+    "look": {
+      "file": "look.png",
+      "frames": 6,
+      "fps": 3,
+      "loop": false
+    },
+    "juggle": {
+      "file": "juggle.png",
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "groom": {
+      "file": "groom.png",
+      "frames": 6,
+      "fps": 6,
+      "loop": true
+    },
+    "dance": {
+      "file": "dance.png",
+      "frames": 8,
+      "fps": 6,
+      "loop": true
+    },
+    "sleepBack": {
+      "file": "sleepBack.png",
+      "frames": 4,
+      "fps": 1.5,
+      "loop": true
+    },
+    "wake": {
+      "file": "wake.png",
+      "frames": 6,
+      "fps": 5,
+      "loop": false
+    }
+  },
+  "behaviour": {
+    "idle": [
+      [
+        "juggle",
+        0.45
+      ],
+      [
+        "groom",
+        0.3
+      ],
+      [
+        "dance",
+        0.25
+      ]
+    ],
+    "sleepAfter": 180,
+    "walkSpeed": 10
+  },
+  "voice": {
+    "animal": {
+      "pitch": 760,
+      "timbre": "squeak",
+      "speed": 1.05,
+      "randomness": 0.25
+    }
+  },
+  "peek": {
+    "visibleRows": 23,
+    "slideSeconds": 0.28
+  }
+}

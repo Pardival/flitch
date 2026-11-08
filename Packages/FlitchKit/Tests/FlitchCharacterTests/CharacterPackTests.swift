@@ -24,6 +24,19 @@ struct CharacterPackTests {
         }
     }
 
+    /// The other characters must offer everything the otter does (Dock activities included).
+    @Test func everyPackHasTheOttersAnimationsAndAKnownVoice() throws {
+        let otter = try CharacterPackLoader.load(from: Self.charactersDir.appendingPathComponent("otter"))
+        let timbres = ["squeak", "soft", "chirp", "hum"]
+        for dir in try Self.bundledPacks() {
+            let c = try CharacterPackLoader.load(from: dir, requireAllLanguages: true)
+            #expect(Set(c.pack.animations.keys) == Set(otter.pack.animations.keys), "\(c.pack.id)")
+            #expect(timbres.contains(c.pack.voice?.animal?.timbre ?? ""), "\(c.pack.id)")
+            #expect(Set(c.idleNames).isSubset(of: c.pack.animations.keys), "\(c.pack.id)")
+        }
+        #expect(try Self.bundledPacks().count >= 4)
+    }
+
     @Test func otterPack() throws {
         let otter = try CharacterPackLoader.load(from: Self.charactersDir.appendingPathComponent("otter"))
         #expect(otter.pack.animations["talk"]?.effectiveDriver == .audioLevel)

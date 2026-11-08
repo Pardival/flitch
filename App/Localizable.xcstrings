@@ -1089,23 +1089,6 @@
         }
       }
     },
-    "Otter · v%@": {
-      "extractionState": "manual",
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Loutre · v%@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nutria · v%@"
-          }
-        }
-      }
-    },
     "Paste your key": {
       "extractionState": "manual",
       "localizations": {
@@ -2955,6 +2938,91 @@
           "stringUnit": {
             "state": "translated",
             "value": "El más barato: %@."
+          }
+        }
+      }
+    },
+    "Otter": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loutre"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nutria"
+          }
+        }
+      }
+    },
+    "Red panda": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panda roux"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panda rojo"
+          }
+        }
+      }
+    },
+    "Little owl": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chouette chevêche"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mochuelo"
+          }
+        }
+      }
+    },
+    "Axolotl": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Axolotl"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajolote"
+          }
+        }
+      }
+    },
+    "Who keeps you company.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qui te tient compagnie."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quién te hace compañía."
           }
         }
       }

@@ -1,4 +1,5 @@
 import AppKit
+import FlitchCharacter
 import FlitchCore
 import FlitchStage
 import SwiftUI
@@ -97,7 +98,7 @@ struct SettingsView: View {
             case .general: GeneralPane(app: app)
             case .brain: BrainPane(connector: app.connector, settings: app.settings, loadModels: app.availableModels)
             case .voice: VoicePane(app: app)
-            case .personality: PersonalityPane(settings: app.settings)
+            case .personality: PersonalityPane(app: app, settings: app.settings)
             case .memory: MemoryPane(app: app)
             case .history: HistoryPane(app: app)
             }
@@ -108,13 +109,15 @@ struct SettingsView: View {
 
     private var header: some View {
         HStack(spacing: 10) {
+            let _ = app.settings.characterID  // redraw when the character changes
             if let image = app.iconImage {
                 Image(decorative: image, scale: 1).interpolation(.none).resizable().frame(width: 36, height: 36)
                     .padding(2).background(.background, in: .rect(cornerRadius: 9))
             }
             VStack(alignment: .leading, spacing: 0) {
                 Text("Flitch").font(.headline)
-                Text("Otter · v\(Bundle.main.shortVersion)").font(.caption).foregroundStyle(.secondary)
+                Text(verbatim: "\(app.character.speciesName) · v\(Bundle.main.shortVersion)").font(.caption)
+                    .foregroundStyle(.secondary)
             }
             Spacer()
         }

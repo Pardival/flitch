@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flitch</title>
+  <meta name="description" content="A free voice assistant for macOS, embodied by a pixel-art animal. Hold a key, ask, it answers out loud.">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <meta property="og:title" content="Flitch: a pixel-art voice assistant for your Mac">
+  <meta property="og:image" content="assets/shots/answer.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pink: #ffe2e8;
+      --aqua: #c4ecf0;
+      --text: #3a2230;
+      --muted: #7a5f6c;
+      --gill: #d6468a;
+      --teal: #2fbfae;
+      --teal-dark: #1b8e81;
+      --card: #ffffffb8;
+      --pixel: "Pixelify Sans", ui-monospace, monospace;
+      --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      font-family: var(--sans); color: var(--text); line-height: 1.5;
+      background: linear-gradient(180deg, var(--pink), var(--aqua)) fixed;
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    a { color: var(--teal-dark); }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; }
+    .brand { display: flex; align-items: center; gap: 8px; font: 700 22px var(--pixel); color: var(--text); text-decoration: none; }
+    .brand .sprite { width: 40px; height: 40px; }
+    .links { display: flex; gap: 14px; align-items: center; font-size: 14px; }
+    .links a { color: var(--muted); text-decoration: none; }
+    .lang button { background: none; border: 0; font: 600 13px var(--sans); color: var(--muted); cursor: pointer; padding: 4px 6px; border-radius: 6px; }
+    .lang button[aria-pressed="true"] { background: #fff; color: var(--text); }
+
+    .hero { text-align: center; padding: 24px 0 8px; }
+    .hero .sprite { width: 192px; height: 192px; margin: 0 auto; }
+    h1 { font: 700 clamp(38px, 6vw, 56px)/1.05 var(--pixel); margin: 8px 0 10px; }
+    h1 .hl { color: var(--gill); }
+    .lead { font-size: 18px; color: var(--muted); margin: 0 auto 24px; max-width: 30em; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+      font: 700 19px var(--pixel); color: #fff; background: var(--teal);
+      padding: 14px 26px; border-radius: 14px; box-shadow: 0 4px 0 var(--teal-dark), 0 10px 24px #2fbfae55;
+      transition: transform .08s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--teal-dark); }
+    .btn svg { width: 20px; height: 20px; }
+    .meta { font-size: 14px; color: var(--muted); margin: 14px 0 0; }
+    .meta code { background: var(--card); padding: 3px 8px; border-radius: 6px; font-size: 13px; white-space: nowrap; display: inline-block; margin-top: 4px; }
+
+    .shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 44px 0 24px; }
+    figure { margin: 0; }
+    figure img { width: 100%; height: auto; display: block; border-radius: 16px; box-shadow: 0 10px 30px #3a223022; background: #fff; }
+    figcaption { text-align: center; margin-top: 12px; font: 600 18px var(--pixel); }
+    figcaption b { color: var(--gill); margin-right: 6px; }
+
+    footer { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 16px 40px; }
+
+    .sprite { background-repeat: no-repeat; image-rendering: pixelated; }
+    .bubbles { position: fixed; inset: 0; pointer-events: none; z-index: -1; overflow: hidden; }
+    .bubbles i { position: absolute; bottom: -40px; border: 2px solid #ffffffb0; border-radius: 50%; animation: rise linear infinite; }
+    @keyframes rise { to { transform: translateY(-110vh); } }
+
+    [data-fr] { display: none; }
+    html[lang="fr"] [data-fr] { display: revert; }
+    html[lang="fr"] [data-en] { display: none; }
+
+    @media (max-width: 760px) {
+      .shots { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+      .hero .sprite { width: 144px; height: 144px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .bubbles { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="bubbles" aria-hidden="true"></div>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#"><span class="sprite" data-strip="assets/sprites/axolotl-idle.png" data-frames="6" data-fps="3"></span>Flitch</a>
+      <div class="links">
+        <a href="https://github.com/Pardival/flitch">GitHub</a>
+        <span class="lang" role="group" aria-label="Language">
+          <button type="button" data-set-lang="en" aria-pressed="true">EN</button><button type="button" data-set-lang="fr" aria-pressed="false">FR</button>
+        </span>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <div class="sprite" data-strip="assets/sprites/axolotl-juggle.png" data-frames="8" data-fps="8" role="img" aria-label="Axo the axolotl bouncing bubbles"></div>
+      <h1>
+        <span data-en>Ask out loud.<br><span class="hl">It answers.</span></span>
+        <span data-fr>Pose ta question.<br><span class="hl">Il te répond.</span></span>
+      </h1>
+      <p class="lead">
+        <span data-en>A little pixel-art friend on your Mac. Hold a key, talk, release: it answers out loud.</span>
+        <span data-fr>Un petit compagnon en pixel art sur ton Mac. Maintiens une touche, parle, relâche : il te répond à voix haute.</span>
+      </p>
+      <a class="btn" id="download" href="https://github.com/Pardival/flitch/releases/latest">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 3h2v10.2l3.6-3.6 1.4 1.4-6 6-6-6 1.4-1.4 3.6 3.6V3zM4 19h16v2H4z"/></svg>
+        <span data-en>Download for Mac</span><span data-fr>Télécharger pour Mac</span>
+      </a>
+      <p class="meta">
+        <span id="version" data-en>Free · macOS 26+</span><span id="version-fr" data-fr>Gratuit · macOS 26+</span>
+        · <span data-en>or</span><span data-fr>ou</span> <code>brew install pardival/tap/flitch</code>
+      </p>
+    </header>
+
+    <main class="shots">
+      <figure>
+        <img src="assets/shots/dock.jpg" width="1120" height="560" alt="Axo on the Dock, thinking about the question" loading="lazy">
+        <figcaption><b>1</b><span data-en>Hold ⌥ and talk</span><span data-fr>Maintiens ⌥ et parle</span></figcaption>
+      </figure>
+      <figure>
+        <img src="assets/shots/answer.jpg" width="1120" height="560" alt="Axo in a corner of the screen, answering in a speech bubble" loading="lazy">
+        <figcaption><b>2</b><span data-en>It answers out loud</span><span data-fr>Il répond à voix haute</span></figcaption>
+      </figure>
+      <figure>
+        <img src="assets/shots/characters.jpg" width="1120" height="560" alt="Settings: pick Flitch the otter, Axo the axolotl, Hulo the owl or Pip the red panda" loading="lazy">
+        <figcaption><b>3</b><span data-en>Pick your buddy</span><span data-fr>Choisis ton compagnon</span></figcaption>
+      </figure>
+    </main>
+  </div>
+
+  <footer>
+    <span data-en>Free and open source. Works with ChatGPT, Claude, Gemini, Mistral or a local model. No account, no tracking.</span>
+    <span data-fr>Gratuit et open source. Marche avec ChatGPT, Claude, Gemini, Mistral ou un modèle local. Sans compte, sans pistage.</span>
+    <br><a href="https://github.com/Pardival/flitch">GitHub</a> · <a href="https://github.com/Pardival/flitch/blob/main/docs/install.md"><span data-en>Install guide</span><span data-fr>Guide d'installation</span></a>
+  </footer>
+
+  <script>
+    const setLang = (l) => {
+      document.documentElement.lang = l;
+      document.querySelectorAll("[data-set-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.setLang === l)));
+      try { localStorage.setItem("flitch.lang", l); } catch (e) {}
+    };
+    let saved = null;
+    try { saved = localStorage.getItem("flitch.lang"); } catch (e) {}
+    setLang(saved || ((navigator.language || "en").toLowerCase().startsWith("fr") ? "fr" : "en"));
+    document.querySelectorAll("[data-set-lang]").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.setLang)));
+
+    // pixel sprites: step through the frames of a horizontal strip
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    document.querySelectorAll(".sprite[data-strip]").forEach((el) => {
+      const n = +el.dataset.frames;  // sizes in % so the frame stays right at any width
+      el.style.backgroundImage = `url(${el.dataset.strip})`;
+      el.style.backgroundSize = `${n * 100}% 100%`;
+      el.style.backgroundPosition = "0% 0";
+      if (still) return;
+      let i = 0;
+      setInterval(() => { i = (i + 1) % n; el.style.backgroundPosition = `${(i * 100) / (n - 1)}% 0`; }, 1000 / el.dataset.fps);
+    });
+
+    // a few rising bubbles
+    const box = document.querySelector(".bubbles");
+    for (let k = 0; k < 14; k++) {
+      const b = document.createElement("i"), r = 8 + Math.random() * 30;
+      Object.assign(b.style, { left: Math.random() * 100 + "%", width: r + "px", height: r + "px",
+        animationDuration: 12 + Math.random() * 14 + "s", animationDelay: -Math.random() * 20 + "s" });
+      box.appendChild(b);
+    }
+
+    // the button points at the latest release's DMG when there is one
+    fetch("https://api.github.com/repos/Pardival/flitch/releases/latest")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((rel) => {
+        if (!rel) return;
+        const dmg = (rel.assets || []).find((a) => a.name.endsWith(".dmg"));
+        if (dmg) document.getElementById("download").href = dmg.browser_download_url;
+        document.getElementById("version").textContent = `${rel.tag_name} · free · macOS 26+`;
+        document.getElementById("version-fr").textContent = `${rel.tag_name} · gratuit · macOS 26+`;
+      })
+      .catch(() => {});
+  </script>
+</body>
+</html>
