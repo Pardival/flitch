@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "presets": [
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "baseURL": "https://openrouter.ai/api/v1",
+      "auth": "bearer",
+      "models": {
+        "fast": "anthropic/claude-haiku-5.5",
+        "balanced": "anthropic/claude-sonnet-5.5",
+        "precise": "anthropic/claude-opus-5.5"
+      },
+      "capabilities": ["tools"],
+      "headers": { "HTTP-Referer": "https://github.com/Pardival/flitch", "X-Title": "Flitch" }
+    },
+    {
+      "id": "ollama",
+      "name": "Ollama",
+      "baseURL": "http://localhost:11434/v1",
+      "auth": "none",
+      "models": { "fast": "", "balanced": "", "precise": "" },
+      "capabilities": [],
+      "local": true
+    },
+    {
+      "id": "lmstudio",
+      "name": "LM Studio",
+      "baseURL": "http://localhost:1234/v1",
+      "auth": "none",
+      "models": { "fast": "", "balanced": "", "precise": "" },
+      "capabilities": [],
+      "local": true
+    }
+  ]
+}

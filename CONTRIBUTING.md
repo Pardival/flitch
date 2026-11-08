@@ -31,7 +31,7 @@ cd Packages/FlitchKit && swift test
 
 ## Code style
 
-- Swift 6 with strict concurrency. Run `swift format lint -r .` before pushing; CI runs it too.
+- Swift 6 with strict concurrency. Run `./scripts/format.sh` then `./scripts/lint.sh` before pushing; CI runs the lint too (config: `.swift-format`).
 - `FlitchKit` must not import AppKit, except in the `FlitchStage` target.
 - New behaviour comes with tests. Network code is tested against recorded fixtures, never live APIs.
 - **Never log or commit secrets.** API keys and tokens only go through `CredentialStore` (Keychain).
