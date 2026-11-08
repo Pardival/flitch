@@ -30,40 +30,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 return
             }
             try c.start()
-            c.menu.extraItems = [signInItem()]  // temporary until onboarding (#29)
+            if let i = CommandLine.arguments.firstIndex(of: "--open-settings") {
+                let tab = CommandLine.arguments.dropFirst(i + 1).first.flatMap(SettingsWindow.Tab.init) ?? .general
+                c.settingsWindow.show(tab: tab)
+            } else if !c.settings.onboardingDone || c.settings.providerID == nil {
+                c.onboarding.show()
+            }
         } catch {
             let a = NSAlert()
             a.messageText = "Flitch couldn't start"
             a.informativeText = String(describing: error)
             a.runModal()
             NSApp.terminate(nil)
-        }
-    }
-
-    private func signInItem() -> NSMenuItem {
-        let item = NSMenuItem(
-            title: String(localized: "Sign in with OpenRouter…"), action: #selector(signInWithOpenRouter),
-            keyEquivalent: "")
-        item.target = self
-        return item
-    }
-
-    @objc private func signInWithOpenRouter() {
-        guard let controller else { return }
-        Task {
-            do {
-                let key = try await OpenRouterAuth().signIn { url in
-                    await MainActor.run { _ = NSWorkspace.shared.open(url) }
-                }
-                try await controller.credentials.save(.apiKey(key), for: "openrouter")
-                controller.settings.providerID = "openrouter"
-                controller.refreshProvider()
-                alert(
-                    String(localized: "Connected to OpenRouter"),
-                    String(localized: "Flitch can now answer with your OpenRouter account."))
-            } catch {
-                alert(String(localized: "Sign-in failed"), (FlitchError(error) ?? .other("")).userMessage)
-            }
         }
     }
 

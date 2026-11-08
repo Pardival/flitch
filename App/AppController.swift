@@ -23,6 +23,12 @@ final class AppController {
     private var timer: Timer?
     private var lastTick = Date()
     lazy var settingsWindow = SettingsWindow(app: self)
+    lazy var connector = BrainConnector(app: self)
+    lazy var preview = VoicePreview(app: self)
+    lazy var onboarding = OnboardingWindow(app: self)
+
+    /// First idle frame, for the settings header and onboarding.
+    var iconImage: CGImage? { try? SpriteSheet(character: character).frame("idle", 0) }
 
     init() throws {
         let dir = Bundle.main.resourceURL!.appendingPathComponent("Characters/otter")
@@ -155,7 +161,7 @@ final class AppController {
     func refreshVoice() {
         Task {
             voice.synthesizer = await VoiceFactory.make(
-                settings: settings, character: character, credentials: credentials)
+                engine: settings.voiceEngine, settings: settings, character: character, credentials: credentials)
         }
     }
 
@@ -201,10 +207,11 @@ final class AppController {
 /// Builds the selected voice.
 enum VoiceFactory {
     @MainActor
-    static func make(settings: FlitchSettings, character: LoadedCharacter, credentials: CredentialStore) async
-        -> any SentenceSynthesizer
-    {
-        switch settings.voiceEngine {
+    static func make(
+        engine: FlitchSettings.VoiceEngine, settings: FlitchSettings, character: LoadedCharacter,
+        credentials: CredentialStore
+    ) async -> any SentenceSynthesizer {
+        switch engine {
         case .apple:
             return AppleVoice(
                 voiceIdentifier: settings.voiceID(for: .apple),
