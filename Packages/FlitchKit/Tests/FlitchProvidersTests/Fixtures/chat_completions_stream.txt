@@ -1,0 +1,18 @@
+: OPENROUTER PROCESSING
+
+data: {"id":"gen-1","choices":[{"index":0,"delta":{"role":"assistant","content":""}}]}
+
+data: {"id":"gen-1","choices":[{"index":0,"delta":{"content":"Napoléon est né "}}]}
+
+data: {"id":"gen-1","choices":[{"index":0,"delta":{"content":"en 1769."}}]}
+
+data: {"id":"gen-1","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"remember","arguments":""}}]}}]}
+
+data: {"id":"gen-1","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"fact\":\"Loves "}}]}}]}
+
+data: {"id":"gen-1","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"history\"}"}}]},"finish_reason":"tool_calls"}]}
+
+data: {"id":"gen-1","choices":[],"usage":{"prompt_tokens":120,"completion_tokens":14}}
+
+data: [DONE]
+

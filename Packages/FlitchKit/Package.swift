@@ -20,7 +20,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "FlitchCore", resources: [.process("Resources")]),
-        .target(name: "FlitchProviders", dependencies: ["FlitchCore"]),
+        .target(name: "FlitchProviders", dependencies: ["FlitchCore"], resources: [.process("Resources")]),
         .target(name: "FlitchVoice", dependencies: ["FlitchCore"]),
         .target(name: "FlitchMemory", dependencies: ["FlitchCore", .product(name: "GRDB", package: "GRDB.swift")]),
         .target(name: "FlitchCharacter", dependencies: ["FlitchCore"]),
