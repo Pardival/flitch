@@ -378,3 +378,32 @@ if __name__ == "__main__":
         pose(n).image().save(poses_dir / f"{n}.png")
     sheet(root / "preview" / "otter_concept.png")
     print("ok", file=sys.stderr)
+
+
+# ---------------------------------------------------------------- character pack export
+def export_pack(pack_dir: Path):
+    """Writes the sprite strips of `Characters/otter`. v0: one or two frames per animation;
+    proper multi-frame animations come with ticket #21."""
+    anims = {
+        "idle": [pose("idle"), otter(eyes="blink")],
+        "listen": [pose("listen")],
+        "think": [pose("think")],
+        "talk": [otter(mouth="calm"), otter(mouth="o"), otter(mouth="open"), otter(mouth="big")],
+        "happy": [pose("happy")],
+        "wave": [pose("wave")],
+        "sleep": [pose("sleep")],
+        "peek": [peek()],
+    }
+    sprites = pack_dir / "sprites"
+    sprites.mkdir(parents=True, exist_ok=True)
+    for name, frames in anims.items():
+        strip = Image.new("RGBA", (W * len(frames), H), (0, 0, 0, 0))
+        for i, f in enumerate(frames):
+            strip.alpha_composite(f.image(), (i * W, 0))
+        strip.save(sprites / f"{name}.png")
+    return {k: len(v) for k, v in anims.items()}
+
+
+if __name__ == "__main__" and "--pack" in sys.argv:
+    counts = export_pack(Path(__file__).resolve().parent.parent / "Characters" / "otter")
+    print(counts, file=sys.stderr)

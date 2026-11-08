@@ -25,6 +25,9 @@ targets:
     platform: macOS
     sources:
       - path: App
+      - path: Characters
+        type: folder
+        buildPhase: resources
     dependencies:
       - package: FlitchKit
         product: FlitchCore
