@@ -137,9 +137,18 @@ final class AppController {
             provider = nil
             return
         }
+        let store = credentials
         Task {
-            let credential = try? await credentials.credential(for: id)
-            provider = ProviderFactory.make(id: id, credential: credential)
+            let credential = try? await store.credential(for: id)
+            provider = ProviderFactory.make(
+                id: id, credential: credential,
+                chatgptToken: {
+                    guard
+                        let c = try await store.validCredential(
+                            for: ProviderFactory.chatgpt, refresh: { try await ChatGPTAuth().refresh($0) })
+                    else { throw FlitchError.invalidCredentials(provider: "ChatGPT") }
+                    return c.secret
+                })
         }
     }
 

@@ -39,12 +39,21 @@ public struct OAuthToken: Codable, Sendable, Equatable, CustomStringConvertible 
     public var refreshToken: String?
     public var expiresAt: Date?
     public var scopes: [String]
+    /// OAuth client the token was issued to (needed to refresh it).
+    public var clientID: String?
+    /// Account e-mail, for display only.
+    public var accountName: String?
 
-    public init(accessToken: String, refreshToken: String? = nil, expiresAt: Date? = nil, scopes: [String] = []) {
+    public init(
+        accessToken: String, refreshToken: String? = nil, expiresAt: Date? = nil, scopes: [String] = [],
+        clientID: String? = nil, accountName: String? = nil
+    ) {
         self.accessToken = accessToken
         self.refreshToken = refreshToken
         self.expiresAt = expiresAt
         self.scopes = scopes
+        self.clientID = clientID
+        self.accountName = accountName
     }
 
     public var description: String { "OAuthToken(<redacted>, scopes: \(scopes))" }
