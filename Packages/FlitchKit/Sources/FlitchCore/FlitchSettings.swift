@@ -45,6 +45,12 @@ public final class FlitchSettings {
 
     @ObservationIgnored private let defaults: UserDefaults
 
+    /// Learned memories: ask before keeping one (default), or keep without asking.
+    public var confirmMemories: Bool { didSet { save("confirmMemories", confirmMemories) } }
+    /// Lets Flitch learn and use memories at all.
+    public var memoriesEnabled: Bool { didSet { save("memoriesEnabled", memoriesEnabled) } }
+    public var historyRetention: HistoryRetention { didSet { save("historyRetention", historyRetention.rawValue) } }
+
     public var mode: Mode { didSet { save("mode", mode.rawValue) } }
     public var corner: Corner { didSet { save("corner", corner.rawValue) } }
     public var language: AppLanguage { didSet { save("language", language.rawValue) } }
@@ -93,6 +99,9 @@ public final class FlitchSettings {
         fallbackModifiers = i("fallbackModifiers", 0x1000 | 0x0800)  // controlKey | optionKey
         onboardingDone = b("onboardingDone", false)
         showTimings = b("showTimings", false)
+        confirmMemories = b("confirmMemories", true)
+        memoriesEnabled = b("memoriesEnabled", true)
+        historyRetention = s("historyRetention").flatMap(HistoryRetention.init) ?? .year
     }
 
     public func voiceID(for engine: VoiceEngine) -> String? { voiceIDs[engine.rawValue] }
@@ -103,6 +112,19 @@ public final class FlitchSettings {
             defaults.set(value, forKey: "flitch.\(key)")
         } else {
             defaults.removeObject(forKey: "flitch.\(key)")
+        }
+    }
+}
+
+/// How long conversations are kept.
+public enum HistoryRetention: String, Codable, Sendable, CaseIterable {
+    case off, days90, year, forever
+
+    public var seconds: TimeInterval? {
+        switch self {
+        case .days90: 90 * 86_400
+        case .year: 365 * 86_400
+        case .off, .forever: nil
         }
     }
 }

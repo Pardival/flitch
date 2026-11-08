@@ -9,6 +9,8 @@ public struct StageActions {
     public var openAnswer: () -> Void = {}
     public var otterClicked: () -> Void = {}
     public var errorAction: (StageModel.ErrorAction) -> Void = { _ in }
+    /// ✓ (true) or ✗ (false) on a pending memory.
+    public var answerMemory: (StageModel.MemoryChip, Bool) -> Void = { _, _ in }
     public init() {}
 }
 

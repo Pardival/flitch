@@ -48,7 +48,7 @@ final class FakeRecognizer: SpeechRecognizing, @unchecked Sendable {
 final class FakeLLM: LLMProvider, @unchecked Sendable {
     let id = "fake"
     let displayName = "Fake"
-    let capabilities: ProviderCapabilities = [.webSearch]
+    var capabilities: ProviderCapabilities = [.webSearch]
     var replies: [[LLMEvent]]
     var error: (any Error)?
     private(set) var requests: [LLMRequest] = []
@@ -301,5 +301,40 @@ struct OrchestratorTimingTests {
         #expect(
             first.transcript != nil && first.firstToken != nil && first.firstSentence != nil && first.firstAudio != nil)
         #expect(first.summary.count == 4)
+    }
+}
+
+@MainActor
+struct RememberToolTests {
+    static let call = ToolCall(id: "1", name: "remember", argumentsJSON: #"{"fact":" Supports FC Barcelona "}"#)
+
+    @Test func parsesTheFact() {
+        #expect(RememberTool.fact(from: Self.call) == "Supports FC Barcelona")
+        #expect(RememberTool.fact(from: .init(id: "2", name: "other", argumentsJSON: #"{"fact":"x"}"#)) == nil)
+        #expect(RememberTool.fact(from: .init(id: "3", name: "remember", argumentsJSON: "{oops")) == nil)
+        #expect(RememberTool.fact(from: .init(id: "4", name: "remember", argumentsJSON: #"{"fact":"  "}"#)) == nil)
+    }
+
+    @Test func specIsValidJSONSchema() throws {
+        let schema = try JSONSerialization.jsonObject(with: Data(RememberTool.spec.parametersJSON.utf8))
+        #expect((schema as? [String: Any])?["required"] as? [String] == ["fact"])
+    }
+
+    @Test func toolCallsReachTheAppAndAToolOnlyAnswerIsNotAnError() async {
+        let llm = FakeLLM(replies: [[.toolCall(Self.call), .done(nil)]])
+        llm.capabilities = [.tools]
+        let t = ConversationOrchestratorTests(recognizer: FakeRecognizer("Je supporte le Barça"), llm: llm)
+        var calls: [ToolCall] = []
+        t.orchestrator.onToolCall = { calls.append($0) }
+        await t.ask()
+        #expect(calls == [Self.call])
+        #expect(t.orchestrator.phase == .lingering)
+        #expect(!t.log.events.contains { if case .error = $0 { true } else { false } })
+    }
+
+    @Test func promptOffersRememberOnlyWhenEnabled() {
+        let on = PromptBuilder().systemPrompt(.init(persona: "P", canRemember: true))
+        let off = PromptBuilder().systemPrompt(.init(persona: "P"))
+        #expect(on.contains("remember tool") && !off.contains("remember tool"))
     }
 }

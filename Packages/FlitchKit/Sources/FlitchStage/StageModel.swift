@@ -23,6 +23,20 @@ public final class StageModel {
         case retry
     }
 
+    /// A memory Flitch just learned, shown under the bubble.
+    public struct MemoryChip: Equatable, Sendable {
+        public var id: Int64
+        public var fact: String
+        /// Waiting for ✓ / ✗ (false when confirmation is off: "Remembered").
+        public var pending: Bool
+        public init(id: Int64, fact: String, pending: Bool) {
+            self.id = id
+            self.fact = fact
+            self.pending = pending
+        }
+    }
+
+    public private(set) var memoryChip: MemoryChip?
     public private(set) var visible = false
     public private(set) var bubble: Bubble = .none
     public private(set) var animation = "idle"
@@ -97,6 +111,7 @@ public final class StageModel {
             speakingLevel = 0
         case .dismissed:
             visible = false
+            memoryChip = nil
             bubble = .none
             animation = "idle"
             microphoneLevel = 0
@@ -104,6 +119,11 @@ public final class StageModel {
             hovered = false
         }
     }
+
+    /// Shows a memory the model asked to remember.
+    public func showMemory(_ chip: MemoryChip) { memoryChip = chip }
+    /// The user answered the chip (or it was handled elsewhere).
+    public func clearMemory() { memoryChip = nil }
 
     /// Shows or hides the latency line (Settings › show timings).
     public func setTimingsVisible(_ visible: Bool) { timingsVisible = visible }

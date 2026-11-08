@@ -56,3 +56,18 @@ struct StageModelTests {
         #expect(StageModel.action(for: .nothingHeard) == nil)
     }
 }
+
+@MainActor
+struct MemoryChipTests {
+    @Test func chipShowsUntilAnsweredOrDismissed() {
+        let m = StageModel()
+        m.apply(.listening)
+        m.showMemory(.init(id: 7, fact: "Supports FC Barcelona", pending: true))
+        #expect(m.memoryChip?.fact == "Supports FC Barcelona")
+        m.clearMemory()
+        #expect(m.memoryChip == nil)
+        m.showMemory(.init(id: 8, fact: "x", pending: false))
+        m.apply(.dismissed)
+        #expect(m.memoryChip == nil)
+    }
+}

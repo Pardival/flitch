@@ -10,24 +10,29 @@ public struct PromptBuilder: Sendable {
         public var tone: TonePreset
         public var language: AppLanguage
         public var userName: String?
+        public var city: String?
         public var profile: String?
         public var memories: [String]
         public var canSearchWeb: Bool
+        /// The `remember` tool is offered.
+        public var canRemember: Bool
         public var date: Date
         public var timeZone: TimeZone
 
         public init(
             persona: String, tone: TonePreset = .enthusiastic, language: AppLanguage = .english,
-            userName: String? = nil, profile: String? = nil, memories: [String] = [],
-            canSearchWeb: Bool = false, date: Date = Date(), timeZone: TimeZone = .current
+            userName: String? = nil, city: String? = nil, profile: String? = nil, memories: [String] = [],
+            canSearchWeb: Bool = false, canRemember: Bool = false, date: Date = Date(), timeZone: TimeZone = .current
         ) {
             self.persona = persona
             self.tone = tone
             self.language = language
             self.userName = userName
+            self.city = city
             self.profile = profile
             self.memories = memories
             self.canSearchWeb = canSearchWeb
+            self.canRemember = canRemember
             self.date = date
             self.timeZone = timeZone
         }
@@ -57,11 +62,17 @@ public struct PromptBuilder: Sendable {
                 + (input.canSearchWeb
                     ? "You can search the web: use it for news, weather, prices and anything recent."
                     : "You cannot browse the web. For recent events, say your knowledge may be out of date.")
-                + " You cannot act on the computer yet (open apps, send messages…): say so kindly if asked.")
+                + " You cannot act on the computer yet (open apps, send messages…): say so kindly if asked."
+                + (input.canRemember
+                    ? " When the user shares a lasting personal fact, call the remember tool, then answer as usual."
+                    : ""))
 
         var about: [String] = []
         if let name = input.userName?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty {
             about.append("Their name is \(name).")
+        }
+        if let city = input.city?.trimmingCharacters(in: .whitespacesAndNewlines), !city.isEmpty {
+            about.append("They live in \(city).")
         }
         if let profile = input.profile?.trimmingCharacters(in: .whitespacesAndNewlines), !profile.isEmpty {
             about.append(profile)
