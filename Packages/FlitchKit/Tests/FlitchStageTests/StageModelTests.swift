@@ -80,8 +80,12 @@ struct DockGeometryTests {
         let base = DockGeometry.estimatedWidth(prefs: p, runningApps: [], screenWidth: 2000)
         let more = DockGeometry.estimatedWidth(
             prefs: p, runningApps: ["a", "x", "com.apple.finder"], screenWidth: 2000)
-        #expect(base == 5 * 49.2 + 14 + 20)
-        #expect(more == 6 * 49.2 + 28 + 20)
+        // Typed constants: untyped float literals in #expect are too slow to type-check on CI.
+        let tile: CGFloat = 49.2
+        let expectedBase: CGFloat = 5 * tile + 14 + 20
+        let expectedMore: CGFloat = 6 * tile + 28 + 20
+        #expect(base == expectedBase)
+        #expect(more == expectedMore)
         #expect(DockGeometry.estimatedWidth(prefs: p, runningApps: [], screenWidth: 100) == 92)
     }
 
