@@ -26,7 +26,12 @@ public struct OpenAICompatibleAdapter: LLMProvider {
             let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
             let items = json?["data"] as? [[String: Any]] ?? []
             return items.compactMap { item in
-                (item["id"] as? String).map { ModelInfo(id: $0, name: item["name"] as? String) }
+                (item["id"] as? String).map {
+                    // OpenRouter gives the price per token as a string ("0.0000002")
+                    let perToken = ((item["pricing"] as? [String: Any])?["prompt"] as? String).flatMap(Double.init)
+                    return ModelInfo(
+                        id: $0, name: item["name"] as? String, inputPricePerMillion: perToken.map { $0 * 1_000_000 })
+                }
             }
         } catch {
             throw FlitchError.fromProvider(error, provider: displayName, secrets: [apiKey].compactMap { $0 })

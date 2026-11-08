@@ -8,6 +8,16 @@ struct BrainPane: View {
     @Bindable var settings: FlitchSettings
     @State private var keySheet: BrainConnector.KeyProvider?
     @State private var showLocal = false
+    @State private var models: [ModelInfo] = []
+    @State private var loadingModels = false
+    @State private var typingModel = false
+    let loadModels: () async -> [ModelInfo]
+
+    init(connector: BrainConnector, settings: FlitchSettings, loadModels: @escaping () async -> [ModelInfo]) {
+        self.connector = connector
+        self.settings = settings
+        self.loadModels = loadModels
+    }
 
     private var capabilities: ProviderCapabilities {
         guard let id = settings.providerID else { return [] }
@@ -42,7 +52,7 @@ struct BrainPane: View {
                     Text("Precise").tag(ResponseSpeed.precise)
                 }
                 .pickerStyle(.segmented)
-                TextField("Custom model", text: $settings.customModel, prompt: Text("Automatic"))
+                modelPicker
                 Toggle(isOn: $settings.webSearch) {
                     Text("Search the web")
                     Text(
@@ -88,6 +98,65 @@ struct BrainPane: View {
         .formStyle(.grouped)
         .navigationTitle(Text("Brain"))
         .sheet(item: $keySheet) { p in APIKeySheet(provider: p, connector: connector) }
+        .task(id: "\(settings.providerID ?? "")|\(connector.connectedLabel ?? "")") { await reloadModels() }
+    }
+
+    private static let otherTag = "\u{0}other"
+
+    @ViewBuilder private var modelPicker: some View {
+        Picker(selection: modelSelection) {
+            Text("Automatic").tag("")
+            if !models.isEmpty { Divider() }
+            ForEach(models, id: \.id) { m in Text(verbatim: "\(m.name)  ·  \(m.cost.label)").tag(m.id) }
+            if !settings.customModel.isEmpty, !models.contains(where: { $0.id == settings.customModel }) {
+                Text(verbatim: settings.customModel).tag(settings.customModel)
+            }
+            Divider()
+            Text("Other…").tag(Self.otherTag)
+        } label: {
+            Text("Model")
+            Text(modelCaption).font(.caption).foregroundStyle(.secondary)
+        }
+        .disabled(settings.providerID == nil)
+        if typingModel {
+            TextField("Model name", text: $settings.customModel, prompt: Text(verbatim: "gpt-5.1"))
+                .onSubmit { typingModel = false }
+        }
+    }
+
+    private var modelCaption: String {
+        if loadingModels { return String(localized: "Loading the models…") }
+        if settings.customModel.isEmpty { return String(localized: "Flitch picks a recent model for the speed above.") }
+        let cheapest = models.min { $0.cost < $1.cost }
+        let selected = models.first { $0.id == settings.customModel }
+        var parts = [selected.map { String(localized: "Price: \($0.cost.label).") } ?? ""]
+        if let cheapest, let selected, cheapest.cost < selected.cost {
+            parts.append(String(localized: "Cheapest: \(cheapest.name)."))
+        }
+        return parts.filter { !$0.isEmpty }.joined(separator: " ")
+    }
+
+    private var modelSelection: Binding<String> {
+        Binding(
+            get: { typingModel ? Self.otherTag : settings.customModel },
+            set: { value in
+                if value == Self.otherTag {
+                    typingModel = true
+                } else {
+                    typingModel = false
+                    settings.customModel = value
+                }
+            })
+    }
+
+    private func reloadModels() async {
+        guard settings.providerID != nil else {
+            models = []
+            return
+        }
+        loadingModels = true
+        models = await loadModels()  // in the provider's order (newest first for OpenAI)
+        loadingModels = false
     }
 }
 
@@ -142,5 +211,17 @@ struct APIKeySheet: View {
         }
         .padding(20)
         .frame(width: 420)
+    }
+}
+
+extension CostTier {
+    /// Indicative only: prices change, the provider's pricing page is the reference.
+    var label: String {
+        switch self {
+        case .veryCheap: String(localized: "very cheap")
+        case .cheap: String(localized: "cheap")
+        case .medium: String(localized: "mid-priced")
+        case .expensive: String(localized: "expensive")
+        }
     }
 }

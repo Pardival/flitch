@@ -17,9 +17,50 @@ public struct ProviderCapabilities: OptionSet, Sendable, Hashable {
 public struct ModelInfo: Sendable, Hashable, Codable {
     public var id: String
     public var name: String
-    public init(id: String, name: String? = nil) {
+    /// US dollars per million input tokens, when the provider says (OpenRouter does, OpenAI doesn't).
+    public var inputPricePerMillion: Double?
+    public init(id: String, name: String? = nil, inputPricePerMillion: Double? = nil) {
         self.id = id
         self.name = name ?? id
+        self.inputPricePerMillion = inputPricePerMillion
+    }
+
+    /// How expensive the model is: from its price when known, otherwise guessed from its name.
+    public var cost: CostTier {
+        inputPricePerMillion.map(CostTier.init(inputPricePerMillion:)) ?? CostTier(guessingFrom: id)
+    }
+}
+
+/// A rough price level, shown next to each model in Settings.
+public enum CostTier: Int, Sendable, Comparable, CaseIterable {
+    case veryCheap, cheap, medium, expensive
+
+    public static func < (a: Self, b: Self) -> Bool { a.rawValue < b.rawValue }
+
+    public init(inputPricePerMillion p: Double) {
+        self =
+            switch p {
+            case ..<0.3: .veryCheap
+            case ..<1.5: .cheap
+            case ..<6: .medium
+            default: .expensive
+            }
+    }
+
+    /// Model names follow size words across providers (nano, mini, pro, Luna, Terra, Sol, Astra…).
+    public init(guessingFrom id: String) {
+        let id = id.lowercased()
+        func has(_ words: [String]) -> Bool { words.contains { id.contains($0) } }
+        self =
+            if has(["nano", "luna", "lite", "tiny"]) {
+                .veryCheap
+            } else if has(["mini", "flash", "terra", "haiku", "small"]) {
+                .cheap
+            } else if has(["-pro", "astra", "opus", "-max", "ultra"]) {
+                .expensive
+            } else {
+                .medium
+            }
     }
 }
 

@@ -172,4 +172,46 @@ struct OpenAIResponsesAdapterTests {
         let models = ["gpt-6.1-sol", "gpt-6.1-sol-mini", "gpt-6.1-sol-pro", "gpt-4o-mini-tts"].map { ModelInfo(id: $0) }
         #expect(OpenAIResponsesAdapter.pick(models, speed: speed) == expected)
     }
+
+    @Test func neverPicksAModelThatCannotChat() {
+        let models = [
+            "omni-moderation-2024-09-26", "gpt-image-1", "gpt-4o-realtime-preview", "gpt-4o-transcribe",
+            "text-embedding-3-large", "dall-e-3", "gpt-4o-search-preview", "gpt-6.1-sol-2026-05-01", "gpt-6.1-sol",
+        ].map { ModelInfo(id: $0) }
+        #expect(OpenAIResponsesAdapter.pick(models, speed: .balanced) == "gpt-6.1-sol")
+        #expect(OpenAIResponsesAdapter.pick(models, speed: .fast) == "gpt-6.1-sol")
+        #expect(OpenAIResponsesAdapter.pick(models.prefix(5).map { $0 }, speed: .balanced) == nil)
+    }
+
+    @Test func modelsComeNewestFirst() async throws {
+        let host = uniqueHost()
+        let session = StubURLProtocol.session(host: host) { _ in
+            .init(
+                body: Data(
+                    #"{"data":[{"id":"gpt-4o","created":1},{"id":"omni-moderation-latest","created":3},{"id":"gpt-6.1-sol","created":2}]}"#
+                        .utf8))
+        }
+        let a = OpenAIResponsesAdapter(
+            auth: .apiKey("k"), baseURL: URL(string: "https://\(host)/v1")!, http: HTTPTransport(session: session))
+        #expect(try await a.models().map(\.id) == ["gpt-6.1-sol", "gpt-4o"])  // newest first, chat only
+        #expect(OpenAIResponsesAdapter.pick(try await a.models(), speed: .balanced) == "gpt-6.1-sol")
+    }
+}
+
+struct CostTierTests {
+    @Test(arguments: [
+        ("gpt-5-nano", CostTier.veryCheap), ("gpt-5.6-luna", .veryCheap), ("gpt-5.4-mini", .cheap),
+        ("gpt-5.6-terra", .cheap), ("gpt-5.6-sol", .medium), ("gpt-5.5", .medium), ("gpt-5.5-pro", .expensive),
+        ("gpt-6-astra", .expensive), ("claude-haiku-4-5", .cheap), ("claude-opus-4-8", .expensive),
+    ])
+    func guessesFromTheName(id: String, tier: CostTier) {
+        #expect(ModelInfo(id: id).cost == tier)
+    }
+
+    @Test func aKnownPriceWinsOverTheName() {
+        #expect(ModelInfo(id: "something-pro", inputPricePerMillion: 0.1).cost == .veryCheap)
+        #expect(ModelInfo(id: "x", inputPricePerMillion: 1).cost == .cheap)
+        #expect(ModelInfo(id: "x", inputPricePerMillion: 3).cost == .medium)
+        #expect(ModelInfo(id: "x", inputPricePerMillion: 15).cost == .expensive)
+    }
 }

@@ -51,9 +51,15 @@ public struct OpenAIResponsesAdapter: LLMProvider {
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         do {
             let json = try JSONSerialization.jsonObject(with: try await http.data(req)) as? [String: Any]
-            let models = (json?["data"] as? [[String: Any]] ?? [])
+            let all = json?["data"] as? [[String: Any]] ?? []
+            let models =
+                all
                 .filter { ($0["visibility"] as? String).map { $0 == "list" } ?? true }
+                // newest first: the list itself comes in no useful order
+                .sorted { ($0["created"] as? Double ?? 0) > ($1["created"] as? Double ?? 0) }
                 .compactMap { ($0["id"] as? String).map { ModelInfo(id: $0) } }
+                .filter { Self.isChatModel($0.id) }
+            FlitchLog.info("\(displayName): \(models.count) chat models out of \(all.count)")
             await modelCache.set(models)
             return models
         } catch {
@@ -62,8 +68,10 @@ public struct OpenAIResponsesAdapter: LLMProvider {
     }
 
     /// Picks a model for the speed among the account's models (names change often, so no fixed ids).
+    /// `models` is newest first; only chat models are considered, and dated snapshots come last.
     static func pick(_ models: [ModelInfo], speed: ResponseSpeed) -> String? {
-        let ids = models.map(\.id).filter { !$0.contains("audio") && !$0.contains("tts") && !$0.contains("embedding") }
+        let chat = models.map(\.id).filter(isChatModel)
+        let ids = chat.filter { !isSnapshot($0) } + chat.filter(isSnapshot)
         let prefer: [String] =
             switch speed {
             case .fast: ["mini", "nano", "flash", "lite"]
@@ -72,6 +80,24 @@ public struct OpenAIResponsesAdapter: LLMProvider {
             }
         if let m = ids.first(where: { id in prefer.contains { id.contains($0) } }) { return m }
         return ids.first { id in !["mini", "nano", "pro"].contains { id.contains($0) } } ?? ids.first
+    }
+
+    /// Models that answer a conversation through the Responses API (not moderation, images, audio…).
+    static func isChatModel(_ id: String) -> Bool {
+        let id = id.lowercased()
+        let family =
+            id.hasPrefix("gpt-") || id.hasPrefix("chatgpt-")
+            || id.range(of: #"^o\d"#, options: .regularExpression) != nil
+        let notChat = [
+            "audio", "tts", "embedding", "moderation", "image", "realtime", "transcribe", "search", "instruct",
+            "computer-use", "codex", "deep-research", "oss", "dall-e", "whisper", "davinci", "babbage",
+        ]
+        return family && !notChat.contains { id.contains($0) }
+    }
+
+    /// `gpt-4o-2024-08-06`: a frozen version; the alias without the date is preferred.
+    private static func isSnapshot(_ id: String) -> Bool {
+        id.range(of: #"-\d{4}-\d{2}-\d{2}$"#, options: .regularExpression) != nil
     }
 
     public func stream(_ request: LLMRequest) -> AsyncThrowingStream<LLMEvent, Error> {
