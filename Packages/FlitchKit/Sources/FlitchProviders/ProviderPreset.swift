@@ -28,6 +28,10 @@ public struct ProviderPreset: Codable, Sendable, Hashable, Identifiable {
     public var capabilities: [String]
     public var headers: [String: String]?
     public var local: Bool?
+    /// Where users create an API key.
+    public var keyURL: URL?
+    /// Server tool type that turns on web search (e.g. "openrouter:web_search").
+    public var webSearchTool: String?
 
     public var providerCapabilities: ProviderCapabilities {
         var c: ProviderCapabilities = []
@@ -52,6 +56,11 @@ public enum ProviderCatalog {
             throw FlitchError.other("providers.json is missing")
         }
         return try JSONDecoder().decode(File.self, from: Data(contentsOf: url)).presets
+    }
+
+    /// Cloud presets reached with an API key (OpenRouter is listed separately: it has a sign-in).
+    public static var keyPresets: [ProviderPreset] {
+        ((try? bundled()) ?? []).filter { !$0.isLocal && $0.id != "openrouter" }
     }
 
     public static func preset(_ id: String) -> ProviderPreset? {

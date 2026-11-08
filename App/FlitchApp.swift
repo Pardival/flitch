@@ -17,41 +17,31 @@ enum FlitchMain {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var statusItem: NSStatusItem?
-    private let credentials = CredentialStore()
+    private var controller: AppController?
+    private var demo: StageDemo?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        item.button?.title = "Flitch"
-        let menu = NSMenu()
-        // Temporary until the onboarding flow (#29).
-        menu.addItem(
-            withTitle: String(localized: "Sign in with OpenRouter…"), action: #selector(signInWithOpenRouter),
-            keyEquivalent: ""
-        ).target = self
-        menu.addItem(.separator())
-        menu.addItem(
-            withTitle: String(localized: "Quit Flitch"),
-            action: #selector(NSApplication.terminate(_:)),
-            keyEquivalent: "q"
-        )
-        item.menu = menu
-        statusItem = item
-    }
-
-    @objc private func signInWithOpenRouter() {
-        Task {
-            do {
-                let key = try await OpenRouterAuth().signIn { url in
-                    await MainActor.run { _ = NSWorkspace.shared.open(url) }
-                }
-                try await credentials.save(.apiKey(key), for: "openrouter")
-                alert(
-                    String(localized: "Connected to OpenRouter"),
-                    String(localized: "Flitch can now answer with your OpenRouter account."))
-            } catch {
-                alert(String(localized: "Sign-in failed"), (FlitchError(error) ?? .other("")).userMessage)
+        do {
+            let c = try AppController()
+            controller = c
+            if let i = CommandLine.arguments.firstIndex(of: "--demo-stage") {
+                let corner = CommandLine.arguments.dropFirst(i + 1).first ?? "topLeft"
+                demo = try StageDemo(controller: c, corner: corner)
+                return
             }
+            try c.start()
+            if let i = CommandLine.arguments.firstIndex(of: "--open-settings") {
+                let tab = CommandLine.arguments.dropFirst(i + 1).first.flatMap(SettingsWindow.Tab.init) ?? .general
+                c.settingsWindow.show(tab: tab)
+            } else if !c.settings.onboardingDone || c.settings.providerID == nil {
+                c.onboarding.show()
+            }
+        } catch {
+            let a = NSAlert()
+            a.messageText = "Flitch couldn't start"
+            a.informativeText = String(describing: error)
+            a.runModal()
+            NSApp.terminate(nil)
         }
     }
 

@@ -119,3 +119,72 @@ struct OpenAICompatibleAdapterTests {
         #expect(chat.request.value(forHTTPHeaderField: "Authorization") == nil)
     }
 }
+
+struct CloudPresetTests {
+    static let cloudIDs = ["xai", "deepseek", "mistral", "qwen", "kimi", "gemini"]
+
+    @Test(arguments: cloudIDs)
+    func presetIsComplete(id: String) throws {
+        let p = try #require(ProviderCatalog.preset(id))
+        #expect(p.auth == .bearer && !p.isLocal)
+        #expect(p.baseURL.scheme == "https")
+        for speed in ResponseSpeed.allCases { #expect(!p.models.model(for: speed).isEmpty) }
+        #expect(p.keyURL != nil)
+        #expect(ProviderCatalog.keyPresets.contains { $0.id == id })
+    }
+
+    /// Each provider streams the shared Chat Completions fixture through its own base path.
+    @Test(arguments: cloudIDs)
+    func streamsThroughItsEndpoint(id: String) async throws {
+        let host = uniqueHost()
+        var preset = try #require(ProviderCatalog.preset(id))
+        let path = preset.baseURL.path()
+        preset.baseURL = URL(string: "https://\(host)\(path)")!
+        let body = try fixture("chat_completions_stream.txt")
+        let session = StubURLProtocol.session(host: host) { _ in .init(body: body) }
+        let a = OpenAICompatibleAdapter(preset: preset, apiKey: "key-123456", http: HTTPTransport(session: session))
+        let events = try await collect(a.stream(LLMRequest(system: "S", messages: [.user("x")], speed: .balanced)))
+        #expect(events.first == .textDelta("Napoléon est né "))
+        let r = try #require(StubURLProtocol.requests(host: host).first)
+        #expect(r.request.url?.path == path + "/chat/completions")
+        let json = try JSONSerialization.jsonObject(with: r.body ?? Data()) as? [String: Any]
+        #expect(json?["model"] as? String == preset.models.balanced)
+    }
+}
+
+struct OpenRouterWebSearchTests {
+    @Test func enablesTheServerToolAndReadsCitations() async throws {
+        let host = uniqueHost()
+        var preset = try #require(ProviderCatalog.preset("openrouter"))
+        preset.baseURL = URL(string: "https://\(host)/api/v1")!
+        let stream = Data(
+            """
+            data: {"choices":[{"index":0,"delta":{"content":"Aujourd'hui, "}}]}
+
+            data: {"choices":[{"index":0,"delta":{"content":"il pleut.","annotations":[{"type":"url_citation","url_citation":{"url":"https://meteo.example/paris","title":"Météo Paris"}}]}}]}
+
+            data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop","message":{"annotations":[{"type":"url_citation","url_citation":{"url":"https://meteo.example/paris","title":"Météo Paris"}}]}}]}
+
+            data: [DONE]
+
+            """.utf8)
+        let session = StubURLProtocol.session(host: host) { _ in .init(body: stream) }
+        let a = OpenAICompatibleAdapter(preset: preset, apiKey: "sk-or-123456", http: HTTPTransport(session: session))
+        #expect(a.capabilities.contains(.webSearch))
+        let events = try await collect(a.stream(LLMRequest(system: "", messages: [.user("Météo ?")], webSearch: true)))
+        let citations = events.compactMap { if case .citation(let c) = $0 { c } else { nil } }
+        #expect(citations == [Citation(title: "Météo Paris", url: URL(string: "https://meteo.example/paris")!)])
+        let body =
+            try JSONSerialization.jsonObject(with: StubURLProtocol.requests(host: host).first?.body ?? Data())
+            as? [String: Any]
+        let tools = body?["tools"] as? [[String: Any]]
+        #expect(tools?.first?["type"] as? String == "openrouter:web_search")
+    }
+
+    @Test func noToolWhenSearchIsOff() throws {
+        let a = OpenAICompatibleAdapter(preset: ProviderCatalog.preset("openrouter")!, apiKey: "k")
+        let req = try a.makeRequest(LLMRequest(system: "", messages: [], webSearch: false), model: "m")
+        let body = try JSONSerialization.jsonObject(with: req.httpBody!) as? [String: Any]
+        #expect(body?["tools"] == nil)
+    }
+}

@@ -11,15 +11,117 @@
         "balanced": "anthropic/claude-sonnet-5.5",
         "precise": "anthropic/claude-opus-5.5"
       },
-      "capabilities": ["tools"],
-      "headers": { "HTTP-Referer": "https://github.com/Pardival/flitch", "X-Title": "Flitch" }
+      "capabilities": [
+        "tools",
+        "webSearch"
+      ],
+      "headers": {
+        "HTTP-Referer": "https://github.com/Pardival/flitch",
+        "X-Title": "Flitch"
+      },
+      "keyURL": "https://openrouter.ai/keys",
+      "webSearchTool": "openrouter:web_search"
+    },
+    {
+      "id": "xai",
+      "name": "xAI Grok",
+      "baseURL": "https://api.x.ai/v1",
+      "auth": "bearer",
+      "models": {
+        "fast": "grok-4.6",
+        "balanced": "grok-4.7",
+        "precise": "grok-4.7"
+      },
+      "capabilities": [
+        "tools"
+      ],
+      "keyURL": "https://console.x.ai"
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "baseURL": "https://api.deepseek.com/v1",
+      "auth": "bearer",
+      "models": {
+        "fast": "deepseek-chat",
+        "balanced": "deepseek-chat",
+        "precise": "deepseek-reasoner"
+      },
+      "capabilities": [
+        "tools"
+      ],
+      "keyURL": "https://platform.deepseek.com/api_keys"
+    },
+    {
+      "id": "mistral",
+      "name": "Mistral",
+      "baseURL": "https://api.mistral.ai/v1",
+      "auth": "bearer",
+      "models": {
+        "fast": "mistral-small-latest",
+        "balanced": "mistral-medium-latest",
+        "precise": "mistral-large-latest"
+      },
+      "capabilities": [
+        "tools"
+      ],
+      "keyURL": "https://console.mistral.ai/api-keys"
+    },
+    {
+      "id": "qwen",
+      "name": "Qwen (Alibaba Cloud)",
+      "baseURL": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+      "auth": "bearer",
+      "models": {
+        "fast": "qwen-flash",
+        "balanced": "qwen-plus",
+        "precise": "qwen-max"
+      },
+      "capabilities": [
+        "tools"
+      ],
+      "keyURL": "https://modelstudio.console.alibabacloud.com/?tab=playground#/api-key"
+    },
+    {
+      "id": "kimi",
+      "name": "Kimi (Moonshot)",
+      "baseURL": "https://api.moonshot.ai/v1",
+      "auth": "bearer",
+      "models": {
+        "fast": "kimi-latest",
+        "balanced": "kimi-latest",
+        "precise": "kimi-latest"
+      },
+      "capabilities": [
+        "tools"
+      ],
+      "keyURL": "https://platform.moonshot.ai/console/api-keys"
+    },
+    {
+      "id": "gemini",
+      "name": "Google Gemini",
+      "baseURL": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "auth": "bearer",
+      "models": {
+        "fast": "gemini-flash-lite-latest",
+        "balanced": "gemini-flash-latest",
+        "precise": "gemini-pro-latest"
+      },
+      "capabilities": [
+        "tools"
+      ],
+      "keyURL": "https://aistudio.google.com/apikey"
     },
     {
       "id": "ollama",
       "name": "Ollama",
       "baseURL": "http://localhost:11434/v1",
       "auth": "none",
-      "models": { "fast": "", "balanced": "", "precise": "" },
+      "models": {
+        "fast": "",
+        "balanced": "",
+        "precise": ""
+      },
       "capabilities": [],
       "local": true
     },
@@ -28,7 +130,11 @@
       "name": "LM Studio",
       "baseURL": "http://localhost:1234/v1",
       "auth": "none",
-      "models": { "fast": "", "balanced": "", "precise": "" },
+      "models": {
+        "fast": "",
+        "balanced": "",
+        "precise": ""
+      },
       "capabilities": [],
       "local": true
     }

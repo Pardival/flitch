@@ -59,3 +59,22 @@ struct SentenceChunkerTests {
         #expect(c.feed("Ça va ? O") == ["Ça va ?"])
     }
 }
+
+struct FirstChunkTests {
+    @Test func longOpeningSentenceIsCutAtItsFirstClause() {
+        var c = SentenceChunker(firstChunkMinLength: 40)
+        let text = "Napoléon Bonaparte, né en 1769 à Ajaccio, devient empereur en 1804. Il meurt en 1821."
+        var out: [String] = []
+        for ch in text { out += c.feed(String(ch)) }
+        out += c.flush()
+        #expect(out.first == "Napoléon Bonaparte, né en 1769 à Ajaccio,")
+        #expect(out.dropFirst().first == "devient empereur en 1804.")
+        #expect(out.last == "Il meurt en 1821.")
+    }
+
+    @Test func onlyTheFirstChunkIsCutEarly() {
+        var c = SentenceChunker(firstChunkMinLength: 10)
+        let out = c.feed("Oui. Ensuite, une phrase assez longue, avec des virgules, continue. Fin") + c.flush()
+        #expect(out == ["Oui.", "Ensuite, une phrase assez longue, avec des virgules, continue.", "Fin"])
+    }
+}

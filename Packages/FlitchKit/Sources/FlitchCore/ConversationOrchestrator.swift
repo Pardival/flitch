@@ -10,6 +10,36 @@ public enum ConversationPhase: Sendable, Hashable {
     case lingering
 }
 
+/// How long each step took, measured from the key release.
+public struct TurnTimings: Sendable, Hashable {
+    public var transcript: Duration?
+    public var firstToken: Duration?
+    public var firstSentence: Duration?
+    public var firstAudio: Duration?
+
+    public init(
+        transcript: Duration? = nil, firstToken: Duration? = nil, firstSentence: Duration? = nil,
+        firstAudio: Duration? = nil
+    ) {
+        self.transcript = transcript
+        self.firstToken = firstToken
+        self.firstSentence = firstSentence
+        self.firstAudio = firstAudio
+    }
+
+    /// "stt 120 ms · token 640 ms · sentence 900 ms · audio 1 150 ms"
+    public var summary: [String] {
+        func ms(_ d: Duration?) -> String {
+            guard let d else { return "–" }
+            return "\(Int(d / .milliseconds(1))) ms"
+        }
+        return [
+            "stt \(ms(transcript))", "token \(ms(firstToken))", "sentence \(ms(firstSentence))",
+            "audio \(ms(firstAudio))",
+        ]
+    }
+}
+
 /// What the stage (otter + bubble) should show. Sent in order on the main actor.
 public enum ConversationEvent: Sendable, Hashable {
     case listening
@@ -24,6 +54,8 @@ public enum ConversationEvent: Sendable, Hashable {
     case speakingLevel(Float)
     case answerComplete(String)
     case lingering(remaining: Duration)
+    /// Latency of the turn, sent with the answer (debug overlay, docs/perf.md).
+    case timings(TurnTimings)
     case error(FlitchError)
     case dismissed
 }
@@ -93,6 +125,9 @@ public final class ConversationOrchestrator {
     private var lingerRemaining: Duration = .zero
     private var bubbleHovered = false
     private var answerSoFar = ""
+    private let clock = ContinuousClock()
+    private var releasedAt: ContinuousClock.Instant?
+    private var timings = TurnTimings()
     private var language: AppLanguage = .english
 
     public init(dependencies: Dependencies, configuration: Configuration = .init()) {
@@ -128,6 +163,8 @@ public final class ConversationOrchestrator {
         }
         setPhase(.transcribing)
         emit(.transcribing)
+        releasedAt = clock.now
+        timings = TurnTimings()
         let gen = generation
         turnTask = Task { [weak self] in await self?.runTurn(session: session, generation: gen) }
     }
@@ -164,6 +201,7 @@ public final class ConversationOrchestrator {
     // MARK: - Turn
 
     private func startListening() {
+        lastFailedQuestion = nil
         generation += 1
         let gen = generation
         pressElapsed = .zero
@@ -221,17 +259,33 @@ public final class ConversationOrchestrator {
             return
         }
         guard generation == gen, !Task.isCancelled else { return }
+        timings.transcript = elapsed()
         guard !heard.isEmpty else {
             hide()
             return
         }
         emit(.transcribed(heard))
+        await respond(to: heard, generation: gen)
+    }
+
+    /// Asks the model again after a failure (bubble's "Try again").
+    public func retry() {
+        guard phase == .lingering, let question = lastFailedQuestion else { return }
+        lastFailedQuestion = nil
+        cancelTurn()
+        let gen = generation
+        turnTask = Task { [weak self] in await self?.respond(to: question, generation: gen) }
+    }
+
+    /// The question that failed and can be retried.
+    public private(set) var lastFailedQuestion: String?
+
+    private func respond(to heard: String, generation gen: Int) async {
         conversation.append(.user(heard))
         setPhase(.thinking)
         emit(.thinking)
 
         guard let provider = deps.provider() else {
-            conversation.removeLast()
             fail(FlitchError.noProvider, generation: gen)
             return
         }
@@ -245,15 +299,19 @@ public final class ConversationOrchestrator {
         answerSoFar = ""
         let (sentences, continuation) = AsyncThrowingStream<String, Error>.makeStream()
         let producer = Task { [weak self] in
-            var chunker = SentenceChunker()
+            var chunker = SentenceChunker(firstChunkMinLength: 60)
             do {
                 for try await event in provider.stream(request) {
                     try Task.checkCancellation()
                     guard let self, self.generation == gen else { break }
                     switch event {
                     case .textDelta(let delta):
+                        if self.timings.firstToken == nil { self.timings.firstToken = self.elapsed() }
                         self.answerSoFar += delta
-                        for s in chunker.feed(delta) { continuation.yield(s) }
+                        for s in chunker.feed(delta) {
+                            if self.timings.firstSentence == nil { self.timings.firstSentence = self.elapsed() }
+                            continuation.yield(s)
+                        }
                     case .citation(let c):
                         self.emit(.citation(c))
                     case .toolCall(let call):
@@ -294,17 +352,18 @@ public final class ConversationOrchestrator {
         let answer = answerSoFar.trimmingCharacters(in: .whitespacesAndNewlines)
         answerSoFar = ""
         guard !answer.isEmpty else {
-            conversation.removeLast()
             fail(FlitchError.other("empty answer"), generation: gen)
             return
         }
         conversation.append(.assistant(answer))
         emit(.answerComplete(answer))
+        emit(.timings(timings))
         startLingering()
     }
 
     private func sentenceStarted(_ sentence: String, generation gen: Int) {
         guard generation == gen else { return }
+        if timings.firstAudio == nil { timings.firstAudio = elapsed() }
         if phase == .thinking { setPhase(.speaking) }
         guard phase == .speaking else { return }
         emit(.sentence(sentence))
@@ -320,7 +379,11 @@ public final class ConversationOrchestrator {
 
     private func fail(_ error: any Error, generation gen: Int) {
         guard generation == gen, let flitchError = FlitchError(error) else { return }
+        FlitchLog.error(flitchError)
         stopPumps()
+        if conversation.last?.role == .user {
+            lastFailedQuestion = conversation.removeLast().text
+        }
         emit(.error(flitchError))
         startLingering()
     }
@@ -360,6 +423,8 @@ public final class ConversationOrchestrator {
             onConversationClosed?(closed)
         }
     }
+
+    private func elapsed() -> Duration? { releasedAt.map { clock.now - $0 } }
 
     private func setPhase(_ p: ConversationPhase) { phase = p }
     private func emit(_ e: ConversationEvent) { onEvent?(e) }

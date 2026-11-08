@@ -34,6 +34,18 @@ public struct AnthropicAdapter: LLMProvider {
         ResponseSpeed.allCases.map { ModelInfo(id: Self.model(for: $0).model) }
     }
 
+    /// Checks the key with a free call (lists models).
+    public func verifyKey() async throws {
+        var req = URLRequest(url: baseURL.appendingPathComponent("models"))
+        req.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        req.setValue(Self.apiVersion, forHTTPHeaderField: "anthropic-version")
+        do {
+            _ = try await http.data(req)
+        } catch {
+            throw FlitchError.fromProvider(error, provider: displayName, secrets: [apiKey])
+        }
+    }
+
     public func stream(_ request: LLMRequest) -> AsyncThrowingStream<LLMEvent, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {

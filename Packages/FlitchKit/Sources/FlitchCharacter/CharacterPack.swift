@@ -58,6 +58,13 @@ public struct CharacterPack: Codable, Sendable, Equatable {
         public var animal: AnimalVoice?
     }
 
+    /// Discreet mode: how much of the character shows when it peeks in from a screen edge.
+    public struct Peek: Codable, Sendable, Equatable {
+        /// Rows (from the top of the frame) visible when fully peeked in.
+        public var visibleRows: Int
+        public var slideSeconds: Double
+    }
+
     public var formatVersion: Int
     public var id: String
     public var name: String
@@ -72,9 +79,13 @@ public struct CharacterPack: Codable, Sendable, Equatable {
     public var animations: [String: Animation]
     public var behaviour: Behaviour?
     public var voice: Voice?
+    public var peek: Peek?
+
+    /// Peek settings with defaults (upper ~70% of the frame).
+    public var effectivePeek: Peek { peek ?? Peek(visibleRows: frame.height * 7 / 10, slideSeconds: 0.28) }
 
     /// Animations every character must provide for discreet mode.
-    public static let requiredAnimations = ["idle", "listen", "think", "talk", "happy", "peek"]
+    public static let requiredAnimations = ["idle", "listen", "think", "talk", "happy"]
     public static let supportedFormatVersion = 1
 
     /// Weighted idle activities as (name, weight).

@@ -46,7 +46,9 @@ public struct VoicePipeline: SpeechOutput {
             var started: [Task<AudioClip, Error>] = []
             do {
                 for try await sentence in sentences {
-                    let audio = Task { try await synthesizer.synthesize(sentence, language: language) }
+                    let spoken = SpokenText.clean(sentence)
+                    guard !spoken.isEmpty else { continue }
+                    let audio = Task { try await synthesizer.synthesize(spoken, language: language) }
                     started.append(audio)
                     jobsIn.yield((sentence, audio))
                 }
@@ -136,7 +138,7 @@ public final class EngineAudioPlayer: AudioPlaying, @unchecked Sendable {
 
 extension AVAudioPCMBuffer {
     /// Float32 mono buffer from samples.
-    static func mono(_ samples: [Float], sampleRate: Double) -> AVAudioPCMBuffer? {
+    public static func mono(_ samples: [Float], sampleRate: Double) -> AVAudioPCMBuffer? {
         guard let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
             let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(max(1, samples.count)))
         else { return nil }

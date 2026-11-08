@@ -65,8 +65,12 @@ public struct OpenAICompatibleAdapter: LLMProvider {
             "stream": true,
             "stream_options": ["include_usage": true],
         ]
+        var tools: [[String: Any]] = []
+        if request.webSearch, let type = preset.webSearchTool {
+            tools.append(["type": type, "parameters": ["max_results": 5]])
+        }
         if !request.tools.isEmpty {
-            body["tools"] = try request.tools.map { tool -> [String: Any] in
+            tools += try request.tools.map { tool -> [String: Any] in
                 let params = try JSONSerialization.jsonObject(with: Data(tool.parametersJSON.utf8))
                 return [
                     "type": "function",
@@ -74,6 +78,7 @@ public struct OpenAICompatibleAdapter: LLMProvider {
                 ]
             }
         }
+        if !tools.isEmpty { body["tools"] = tools }
         req.httpBody = try JSONSerialization.data(withJSONObject: body)
         return req
     }
@@ -119,6 +124,15 @@ struct ChatCompletionsStreamDecoder {
     }
 
     private var tools: [Int: PendingTool] = [:]
+    private var seenCitations: Set<URL> = []
+
+    /// `{"type":"url_citation","url_citation":{"url":…,"title":…}}`
+    static func citation(_ a: [String: Any]) -> Citation? {
+        guard a["type"] as? String == "url_citation" else { return nil }
+        let c = a["url_citation"] as? [String: Any] ?? a
+        guard let s = c["url"] as? String, let url = URL(string: s) else { return nil }
+        return Citation(title: c["title"] as? String ?? url.host() ?? s, url: url)
+    }
     private var usage: TokenUsage?
     private var finished = false
 
@@ -135,6 +149,15 @@ struct ChatCompletionsStreamDecoder {
         for choice in json["choices"] as? [[String: Any]] ?? [] {
             let delta = choice["delta"] as? [String: Any] ?? [:]
             if let text = delta["content"] as? String, !text.isEmpty { events.append(.textDelta(text)) }
+            let message = choice["message"] as? [String: Any] ?? [:]
+            for a in (delta["annotations"] as? [[String: Any]] ?? [])
+                + (message["annotations"] as? [[String: Any]] ?? [])
+            {
+                if let c = Self.citation(a), !seenCitations.contains(c.url) {
+                    seenCitations.insert(c.url)
+                    events.append(.citation(c))
+                }
+            }
             for call in delta["tool_calls"] as? [[String: Any]] ?? [] {
                 let index = call["index"] as? Int ?? 0
                 var t = tools[index] ?? PendingTool()
