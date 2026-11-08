@@ -68,6 +68,74 @@
           }
         }
       }
+    },
+    "Sign in with OpenRouter…": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se connecter avec OpenRouter…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar sesión con OpenRouter…"
+          }
+        }
+      }
+    },
+    "Connected to OpenRouter": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecté à OpenRouter"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectado a OpenRouter"
+          }
+        }
+      }
+    },
+    "Flitch can now answer with your OpenRouter account.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flitch peut maintenant répondre avec ton compte OpenRouter."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flitch ya puede responder con tu cuenta de OpenRouter."
+          }
+        }
+      }
+    },
+    "Sign-in failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La connexion a échoué"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo iniciar sesión"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
