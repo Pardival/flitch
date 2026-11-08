@@ -22,7 +22,9 @@
 
 ---
 
-> **Status: early development.** Nothing to install yet. Follow the [milestones](https://github.com/Pardival/flitch/milestones) to see progress toward v0.1.
+> **Status: early development**, heading for v0.1. Install: [guide](docs/install.md) (DMG or `brew install pardival/tap/flitch` once the first release is out).
+
+<p align="center"><img src="docs/media/peek.gif" alt="Flitch peeking in from a corner and answering" width="504"> <img src="docs/media/dock.gif" alt="Flitch on the Dock" width="300"></p>
 
 ## What is Flitch?
 
