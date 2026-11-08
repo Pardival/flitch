@@ -265,13 +265,28 @@ final class AppController {
         }
     }
 
+    /// The connected brain's models, for the picker in Settings (empty if it can't list them).
+    func availableModels() async -> [ModelInfo] {
+        // the brain is rebuilt in the background (reading the Keychain can wait for the user to allow it)
+        await providerRefresh?.value
+        guard let provider else { return [] }
+        do {
+            return try await provider.models()
+        } catch {
+            if let e = FlitchError(error) { FlitchLog.error(e) }
+            return []
+        }
+    }
+
+    private var providerRefresh: Task<Void, Never>?
+
     func refreshProvider() {
         guard let id = settings.providerID else {
             provider = nil
             return
         }
         let store = credentials
-        Task {
+        providerRefresh = Task {
             let credential = try? await store.credential(for: id)
             provider = ProviderFactory.make(
                 id: id, credential: credential,

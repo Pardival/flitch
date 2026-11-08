@@ -96,7 +96,7 @@ struct SettingsView: View {
         } detail: {
             switch selection.tab {
             case .general: GeneralPane(app: app)
-            case .brain: BrainPane(connector: app.connector, settings: app.settings)
+            case .brain: BrainPane(connector: app.connector, settings: app.settings, loadModels: app.availableModels)
             case .voice: VoicePane(app: app)
             case .personality: PersonalityPane(app: app, settings: app.settings)
             case .memory: MemoryPane(app: app)
