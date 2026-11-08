@@ -8,6 +8,7 @@ struct VoicePane: View {
     @Bindable var settings: FlitchSettings
     @State private var keyEngine: FlitchSettings.VoiceEngine?
     @State private var designError: String?
+    @State private var pendingSpeechEngine: FlitchSettings.SpeechEngine?
 
     init(app: AppController) {
         self.app = app
@@ -74,17 +75,63 @@ struct VoicePane: View {
                     }
                 }
             }
+            Section {
+                Picker("Transcription", selection: speechEngine) {
+                    Text("On this Mac (private)").tag(FlitchSettings.SpeechEngine.apple)
+                    Text(verbatim: "OpenAI").tag(FlitchSettings.SpeechEngine.openAI)
+                    Text(verbatim: "Mistral").tag(FlitchSettings.SpeechEngine.mistral)
+                }
+            } header: {
+                Text("Hearing you")
+            } footer: {
+                Text(
+                    settings.speechEngine == .apple
+                        ? "Your voice never leaves your Mac."
+                        : "Your question is sent to \(settings.speechEngine == .openAI ? "OpenAI" : "Mistral") when you release the key. Nothing is kept on your Mac."
+                )
+                .font(.caption).foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .navigationTitle(Text("Voice"))
-        .sheet(item: $keyEngine) { engine in VoiceKeySheet(engine: engine, app: app) }
+        .sheet(item: $keyEngine, onDismiss: applyPendingSpeechEngine) { engine in
+            VoiceKeySheet(engine: engine, app: app, selectsVoice: pendingSpeechEngine == nil)
+        }
         .task(id: settings.voiceEngine) { await app.preview.loadVoices(settings.voiceEngine) }
+    }
+
+    /// Picking a cloud engine without a key asks for the key first (shared with that provider's voice).
+    private var speechEngine: Binding<FlitchSettings.SpeechEngine> {
+        Binding(
+            get: { settings.speechEngine },
+            set: { engine in
+                let voiceEngine: FlitchSettings.VoiceEngine? =
+                    switch engine {
+                    case .apple: nil
+                    case .openAI: .openAI
+                    case .mistral: .mistral
+                    }
+                if let voiceEngine, !app.preview.hasKey(voiceEngine) {
+                    pendingSpeechEngine = engine
+                    keyEngine = voiceEngine
+                } else {
+                    settings.speechEngine = engine
+                }
+            })
     }
 
     private var appleVoice: Binding<String> {
         Binding(
             get: { settings.voiceID(for: .apple) ?? "" },
             set: { settings.setVoiceID($0.isEmpty ? nil : $0, for: .apple) })
+    }
+
+    private func applyPendingSpeechEngine() {
+        guard let engine = pendingSpeechEngine else { return }
+        pendingSpeechEngine = nil
+        if let id = engine.credentialID, app.preview.hasKey(id == "openai" ? .openAI : .mistral) {
+            settings.speechEngine = engine
+        }
     }
 
     private var voices: [VoiceCatalog.Voice] {
@@ -146,6 +193,8 @@ struct VoiceRow: View {
 struct VoiceKeySheet: View {
     let engine: FlitchSettings.VoiceEngine
     let app: AppController
+    /// Saving the key also switches to this voice (not when the key is for transcription).
+    var selectsVoice = true
     @State private var key = ""
     @State private var error: String?
     @Environment(\.dismiss) private var dismiss
@@ -167,7 +216,7 @@ struct VoiceKeySheet: View {
                         if let e = await app.preview.saveKey(key, for: engine) {
                             error = e
                         } else {
-                            app.settings.voiceEngine = engine
+                            if selectsVoice { app.settings.voiceEngine = engine }
                             dismiss()
                         }
                     }

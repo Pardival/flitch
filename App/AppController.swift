@@ -16,6 +16,7 @@ final class AppController {
     let menu = StatusMenu()
     let hotkey = HotkeyMonitor()
     let voice = VoiceRouter()
+    let recognizer = RecognizerRouter(AppController.appleRecognizer())
     let character: LoadedCharacter
     private(set) var stage: PeekStage!
     private(set) var orchestrator: ConversationOrchestrator!
@@ -39,7 +40,7 @@ final class AppController {
         let sprites = try SpriteSheet(character: character)
         stage = PeekStage(model: model, sprites: sprites, presentation: presentation())
         let deps = ConversationOrchestrator.Dependencies(
-            recognizer: AppleSpeechRecognizer { state in FlitchLog.info("speech assets: \(state)") },
+            recognizer: recognizer,
             speech: voice,
             provider: { [weak self] in self?.provider },
             promptInput: { [weak self] in self?.promptInput() ?? PromptBuilder.Input(persona: "") },
@@ -52,6 +53,7 @@ final class AppController {
         observeSettings()
         refreshProvider()
         refreshVoice()
+        refreshRecognizer()
         restartHotkey()
         startTimer()
     }
@@ -127,12 +129,13 @@ final class AppController {
         withObservationTracking {
             _ = (settings.providerID, settings.voiceEngine, settings.voiceIDs, settings.voiceSpeed)
             _ = (settings.corner, settings.useRightOption, settings.fallbackKeyCode, settings.fallbackModifiers)
-            _ = settings.showTimings
+            _ = (settings.showTimings, settings.speechEngine)
         } onChange: { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
                 self.refreshProvider()
                 self.refreshVoice()
+                self.refreshRecognizer()
                 self.restartHotkey()
                 self.stage.update(presentation: self.presentation())
                 self.model.setTimingsVisible(self.settings.showTimings)
@@ -165,6 +168,30 @@ final class AppController {
         Task {
             voice.synthesizer = await VoiceFactory.make(
                 engine: settings.voiceEngine, settings: settings, character: character, credentials: credentials)
+        }
+    }
+
+    static func appleRecognizer() -> AppleSpeechRecognizer {
+        AppleSpeechRecognizer { state in FlitchLog.info("speech assets: \(state)") }
+    }
+
+    /// Cloud transcription when chosen and a key is saved; on-device otherwise.
+    func refreshRecognizer() {
+        let engine = settings.speechEngine
+        let router = recognizer
+        let store = credentials
+        Task {
+            let service: CloudSpeechRecognizer.Service? =
+                switch engine {
+                case .apple: nil
+                case .openAI: .openAI
+                case .mistral: .mistral
+                }
+            if let service, let id = engine.credentialID, let key = try? await store.credential(for: id)?.secret {
+                router.recognizer = CloudSpeechRecognizer(service: service, apiKey: key)
+            } else {
+                router.recognizer = Self.appleRecognizer()
+            }
         }
     }
 

@@ -1904,6 +1904,91 @@
           }
         }
       }
+    },
+    "Transcription": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcription"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transcripción"
+          }
+        }
+      }
+    },
+    "On this Mac (private)": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sur ce Mac (privé)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En este Mac (privado)"
+          }
+        }
+      }
+    },
+    "Hearing you": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour t'entendre"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para oírte"
+          }
+        }
+      }
+    },
+    "Your voice never leaves your Mac.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta voix ne quitte jamais ton Mac."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu voz nunca sale de tu Mac."
+          }
+        }
+      }
+    },
+    "Your question is sent to %@ when you release the key. Nothing is kept on your Mac.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta question est envoyée à %@ quand tu relâches la touche. Rien n'est gardé sur ton Mac."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu pregunta se envía a %@ al soltar la tecla. No se guarda nada en tu Mac."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
