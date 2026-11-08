@@ -61,7 +61,9 @@ struct VoicePipelineTests {
             try await VoicePipeline(synthesizer: FakeSynth(), player: player).speak(
                 Self.stream(["One.", "Two."]), language: .english, onSentenceStart: { _ in }, onLevel: { _ in })
         }
-        try await Task.sleep(for: .milliseconds(50))
+        for _ in 0..<200 where player.played.withLock({ $0.isEmpty }) {
+            try await Task.sleep(for: .milliseconds(10))
+        }
         task.cancel()
         await #expect(throws: CancellationError.self) { try await task.value }
         #expect(player.stops.withLock { $0 } >= 1)

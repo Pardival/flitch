@@ -51,6 +51,12 @@ struct GeneralPane: View {
                 Toggle("Launch at login", isOn: $settings.launchAtLogin)
                     .onChange(of: settings.launchAtLogin) { _, on in LaunchAtLogin.set(on) }
             }
+            Section("Advanced") {
+                Toggle(isOn: $settings.showTimings) {
+                    Text("Show response timings")
+                    Text("Shows how long each step takes, in the bubble.").font(.caption).foregroundStyle(.secondary)
+                }
+            }
         }
         .formStyle(.grouped)
         .navigationTitle(Text("General"))

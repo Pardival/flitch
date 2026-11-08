@@ -290,3 +290,16 @@ struct OrchestratorRetryTests {
         #expect(t.orchestrator.phase == .lingering)
     }
 }
+
+@MainActor
+struct OrchestratorTimingTests {
+    @Test func timingsAreReportedWithTheAnswer() async throws {
+        let t = ConversationOrchestratorTests()
+        await t.ask()
+        let timings = t.log.events.compactMap { if case .timings(let x) = $0 { x } else { nil } }
+        let first = try #require(timings.first)
+        #expect(
+            first.transcript != nil && first.firstToken != nil && first.firstSentence != nil && first.firstAudio != nil)
+        #expect(first.summary.count == 4)
+    }
+}

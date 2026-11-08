@@ -89,6 +89,8 @@ public final class StageModel {
             let progress = max(0, min(1, remaining / lingerTotal))
             bubble = .lingering(
                 text: answer.isEmpty ? spokenSentences.joined(separator: " ") : answer, progress: progress)
+        case .timings(let t):
+            lastTimings = t.summary
         case .error(let e):
             bubble = .error(e)
             animation = "idle"
@@ -103,7 +105,12 @@ public final class StageModel {
         }
     }
 
-    public func setTimings(_ lines: [String]) { timings = lines }
+    /// Shows or hides the latency line (Settings › show timings).
+    public func setTimingsVisible(_ visible: Bool) { timingsVisible = visible }
+    private var timingsVisible = false
+    private var lastTimings: [String] = [] {
+        didSet { timings = timingsVisible ? lastTimings : [] }
+    }
 
     /// The next step to offer for an error.
     public static func action(for error: FlitchError) -> ErrorAction? {

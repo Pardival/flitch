@@ -28,15 +28,34 @@ public struct SentenceChunker: Sendable {
 
     private let abbreviations: Set<String>
     private var buffer: [Character] = []
+    /// Speeds up the first sound: before anything was emitted, a long opening sentence may be cut at
+    /// its first comma, semicolon or colon once it reaches this many characters (nil = never).
+    private let firstChunkMinLength: Int?
+    private var emittedAny = false
 
-    public init(abbreviations: Set<String> = SentenceChunker.defaultAbbreviations) {
+    public init(abbreviations: Set<String> = SentenceChunker.defaultAbbreviations, firstChunkMinLength: Int? = nil) {
         self.abbreviations = abbreviations
+        self.firstChunkMinLength = firstChunkMinLength
     }
 
     /// Adds streamed text and returns the sentences that are now complete.
     public mutating func feed(_ text: String) -> [String] {
         buffer.append(contentsOf: text)
-        return extract(final: false)
+        var out = extract(final: false)
+        if out.isEmpty, !emittedAny, let early = earlyClause() { out = [early] }
+        if !out.isEmpty { emittedAny = true }
+        return out
+    }
+
+    /// First clause of a long opening sentence ("Napoléon Bonaparte, né en 1769 à Ajaccio, …").
+    private mutating func earlyClause() -> String? {
+        guard let min = firstChunkMinLength, buffer.count >= min else { return nil }
+        for i in (min / 2)..<(buffer.count - 1) where [",", ";", ":"].contains(buffer[i]) && buffer[i + 1] == " " {
+            let s = Self.clean(buffer[...i])
+            buffer = Array(buffer[(i + 1)...])
+            return s
+        }
+        return nil
     }
 
     /// Ends the stream: returns the remaining complete sentences and the leftover text.

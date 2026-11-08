@@ -48,6 +48,7 @@ final class AppController {
         orchestrator = ConversationOrchestrator(dependencies: deps)
         orchestrator.onEvent = { [weak self] event in self?.handle(event) }
         wireActions()
+        model.setTimingsVisible(settings.showTimings)
         observeSettings()
         refreshProvider()
         refreshVoice()
@@ -126,6 +127,7 @@ final class AppController {
         withObservationTracking {
             _ = (settings.providerID, settings.voiceEngine, settings.voiceIDs, settings.voiceSpeed)
             _ = (settings.corner, settings.useRightOption, settings.fallbackKeyCode, settings.fallbackModifiers)
+            _ = settings.showTimings
         } onChange: { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
@@ -133,6 +135,7 @@ final class AppController {
                 self.refreshVoice()
                 self.restartHotkey()
                 self.stage.update(presentation: self.presentation())
+                self.model.setTimingsVisible(self.settings.showTimings)
                 self.observeSettings()
             }
         }
