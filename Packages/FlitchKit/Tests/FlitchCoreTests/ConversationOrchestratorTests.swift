@@ -180,10 +180,11 @@ struct ConversationOrchestratorTests {
         #expect(log.events.last == .dismissed)
     }
 
-    @Test func silenceHidesWithoutCallingTheModel() async {
+    @Test func silenceSaysNothingWasHeardWithoutCallingTheModel() async {
         let t = ConversationOrchestratorTests(recognizer: FakeRecognizer("   "))
         await t.ask()
-        #expect(t.orchestrator.phase == .hidden)
+        #expect(t.log.events.contains(.error(.nothingHeard)))
+        #expect(t.orchestrator.phase == .lingering)
         #expect(t.llm?.requests.isEmpty == true)
     }
 

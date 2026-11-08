@@ -156,7 +156,9 @@ public final class ConversationOrchestrator {
         guard phase == .listening else { return }
         let session = sessionTask
         stopPumps()
+        FlitchLog.info("shortcut released after \(pressElapsed)")
         if pressElapsed < config.minimumPress {
+            FlitchLog.info("press too short, ignored")
             Task { await session?.value?.cancel() }
             hide()
             return
@@ -201,6 +203,7 @@ public final class ConversationOrchestrator {
     // MARK: - Turn
 
     private func startListening() {
+        FlitchLog.info("listening")
         lastFailedQuestion = nil
         generation += 1
         let gen = generation
@@ -260,8 +263,9 @@ public final class ConversationOrchestrator {
         }
         guard generation == gen, !Task.isCancelled else { return }
         timings.transcript = elapsed()
+        FlitchLog.info("transcript: \(heard.count) characters")
         guard !heard.isEmpty else {
-            hide()
+            fail(FlitchError.nothingHeard, generation: gen)  // say so instead of vanishing silently
             return
         }
         emit(.transcribed(heard))

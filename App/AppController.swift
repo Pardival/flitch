@@ -1,3 +1,4 @@
+import AVFoundation
 import AppKit
 import FlitchCharacter
 import FlitchCore
@@ -272,6 +273,7 @@ final class AppController {
     /// Cloud transcription when chosen and a key is saved; on-device otherwise.
     func refreshRecognizer() {
         let engine = settings.speechEngine
+        let language = settings.language
         let router = recognizer
         let store = credentials
         Task {
@@ -284,7 +286,9 @@ final class AppController {
             if let service, let id = engine.credentialID, let key = try? await store.credential(for: id)?.secret {
                 router.recognizer = CloudSpeechRecognizer(service: service, apiKey: key)
             } else {
-                router.recognizer = Self.appleRecognizer()
+                let apple = Self.appleRecognizer()
+                router.recognizer = apple
+                await apple.prepare(language: language)
             }
         }
     }
@@ -303,7 +307,11 @@ final class AppController {
 
     func restartHotkey() {
         let combo = KeyCombo(keyCode: UInt32(settings.fallbackKeyCode), modifiers: UInt32(settings.fallbackModifiers))
-        hotkey.start(preferred: settings.useRightOption ? .rightOption : .combo(combo), fallback: combo)
+        let mode = hotkey.start(preferred: settings.useRightOption ? .rightOption : .combo(combo), fallback: combo)
+        FlitchLog.info(
+            "hotkey: \(mode.map { "\($0)" } ?? "none"), input monitoring: \(HotkeyMonitor.inputMonitoringGranted), "
+                + "microphone: \(AVCaptureDevice.authorizationStatus(for: .audio).rawValue), "
+                + "provider: \(settings.providerID ?? "none"), mode: \(settings.mode)")
         stage?.update(presentation: presentation())
     }
 
