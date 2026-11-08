@@ -1,6 +1,7 @@
 name: Flitch
 options:
   bundleIdPrefix: app.flitch
+  knownRegions: [en, fr, es, Base]
   deploymentTarget:
     macOS: "26.0"
   developmentLanguage: en

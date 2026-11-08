@@ -19,7 +19,7 @@ let package = Package(
         .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.0.0")
     ],
     targets: [
-        .target(name: "FlitchCore"),
+        .target(name: "FlitchCore", resources: [.process("Resources")]),
         .target(name: "FlitchProviders", dependencies: ["FlitchCore"]),
         .target(name: "FlitchVoice", dependencies: ["FlitchCore"]),
         .target(name: "FlitchMemory", dependencies: ["FlitchCore", .product(name: "GRDB", package: "GRDB.swift")]),
