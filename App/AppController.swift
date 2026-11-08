@@ -19,7 +19,7 @@ final class AppController {
     let hotkey = HotkeyMonitor()
     let voice = VoiceRouter()
     let recognizer = RecognizerRouter(AppController.appleRecognizer())
-    let character: LoadedCharacter
+    private(set) var character: LoadedCharacter
     /// History, profile and memories (nil only if the database can't be opened).
     let memory: MemoryStore?
     /// Cached "About me", saved by settings › Memory.
@@ -40,9 +40,24 @@ final class AppController {
     /// First idle frame, for the settings header and onboarding.
     var iconImage: CGImage? { try? SpriteSheet(character: character).frame("idle", 0) }
 
+    static let charactersDirectory = Bundle.main.resourceURL!.appendingPathComponent("Characters")
+
+    /// Every bundled character, the otter first.
+    static let availableCharacters: [LoadedCharacter] = {
+        let ids = (try? FileManager.default.contentsOfDirectory(atPath: charactersDirectory.path)) ?? []
+        return ids.sorted { ($0 == "otter" ? "" : $0) < ($1 == "otter" ? "" : $1) }
+            .compactMap { try? CharacterPackLoader.load(from: charactersDirectory.appendingPathComponent($0)) }
+    }()
+
+    /// The chosen character, or the otter if that pack is missing or broken.
+    static func loadCharacter(_ id: String) throws -> LoadedCharacter {
+        if let c = try? CharacterPackLoader.load(from: charactersDirectory.appendingPathComponent(id)) { return c }
+        FlitchLog.info("character \(id) not found, using the otter")
+        return try CharacterPackLoader.load(from: charactersDirectory.appendingPathComponent("otter"))
+    }
+
     init() throws {
-        let dir = Bundle.main.resourceURL!.appendingPathComponent("Characters/otter")
-        character = try CharacterPackLoader.load(from: dir)
+        character = try Self.loadCharacter(settings.characterID)
         do {
             memory = try MemoryStore.openDefault()
         } catch {
@@ -147,6 +162,15 @@ final class AppController {
         }
     }
 
+    /// Swaps the character (sprites, voice, persona) when another one is picked in Settings.
+    private func applyCharacter() {
+        guard settings.characterID != character.pack.id,
+            let next = try? Self.loadCharacter(settings.characterID), next.pack.id != character.pack.id
+        else { return }
+        character = next
+        stageMode = nil  // rebuild the stage with the new sprites
+    }
+
     /// Corner peek or Dock walker, from the settings.
     private func makeStage() throws {
         guard stageMode != settings.mode else { return }
@@ -223,9 +247,11 @@ final class AppController {
             _ = (settings.providerID, settings.voiceEngine, settings.voiceIDs, settings.voiceSpeed)
             _ = (settings.corner, settings.useRightOption, settings.fallbackKeyCode, settings.fallbackModifiers)
             _ = (settings.showTimings, settings.speechEngine, settings.historyRetention, settings.mode)
+            _ = settings.characterID
         } onChange: { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
+                self.applyCharacter()  // first: the voice and the stage depend on it
                 self.refreshProvider()
                 self.refreshVoice()
                 self.refreshRecognizer()

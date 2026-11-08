@@ -75,6 +75,8 @@ public final class FlitchSettings {
     public var onboardingDone: Bool { didSet { save("onboardingDone", onboardingDone) } }
     /// Shows turn timings in the bubble (latency work).
     public var showTimings: Bool { didSet { save("showTimings", showTimings) } }
+    /// The character pack folder name ("otter", "red-panda", "owl", "axolotl").
+    public var characterID: String { didSet { save("characterID", characterID) } }
 
     public init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -99,6 +101,7 @@ public final class FlitchSettings {
         fallbackModifiers = i("fallbackModifiers", 0x1000 | 0x0800)  // controlKey | optionKey
         onboardingDone = b("onboardingDone", false)
         showTimings = b("showTimings", false)
+        characterID = s("characterID") ?? "otter"
         confirmMemories = b("confirmMemories", true)
         memoriesEnabled = b("memoriesEnabled", true)
         historyRetention = s("historyRetention").flatMap(HistoryRetention.init) ?? .year
