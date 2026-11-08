@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Flitch · premier lancement</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0b7d71}a:hover{color:#075e55}
+.px{image-rendering:pixelated}
+</style>
+</helmet>
+<div style="width: 760px; height: 560px; box-sizing: border-box; background: #ffffff; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; font-family: Inter, system-ui, sans-serif; color: #1d1d1f; border: 1px solid #e5e5ea; box-shadow: 0 20px 50px rgba(16,24,40,0.12);">
+  <div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 16px; flex-shrink: 0;">
+    <span style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f57;"></span>
+    <span style="width: 12px; height: 12px; border-radius: 50%; background: #febc2e;"></span>
+    <span style="width: 12px; height: 12px; border-radius: 50%; background: #28c840;"></span>
+  </div>
+
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; padding: 0 96px; min-height: 0;">
+    <div style="width: 112px; height: 112px; border-radius: 28px; background: #eef7f5; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+      <img class="px" src="{{ sprite }}" alt="La loutre Flitch" style="width: 96px; height: 96px;">
+    </div>
+
+    <div style="width: 100%; margin-top: 22px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
+      <sc-if value="{{ s0 }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">Salut, moi c'est Flitch</h1>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #6e6e73; max-width: 460px;">Une petite loutre qui vit dans un coin de ton écran. Maintiens une touche, pose ta question, et je te réponds à voix haute.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s1 }}" hint-placeholder-val="{{ false }}">
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Connecte mon cerveau</h1>
+          <p style="margin: 0 0 6px; font-size: 14px; color: #6e6e73;">Tes identifiants restent dans le Trousseau de ton Mac.</p>
+          <button type="button" style="width: 100%; height: 48px; border-radius: 12px; border: none; background: #1d1d1f; color: #ffffff; font-size: 15px; font-weight: 600; cursor: pointer; font-family: Inter, sans-serif;">Continuer avec ChatGPT</button>
+          <button type="button" style="width: 100%; height: 48px; border-radius: 12px; border: 1px solid #d2d2d7; background: #ffffff; color: #1d1d1f; font-size: 15px; font-weight: 600; cursor: pointer; font-family: Inter, sans-serif;">Se connecter avec OpenRouter</button>
+          <div style="display: flex; gap: 18px; margin-top: 4px; font-size: 13px;">
+            <a href="#">J'ai une clé API</a>
+            <a href="#">Utiliser un modèle local</a>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Je peux t'entendre ?</h1>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #6e6e73; max-width: 460px;">J'écoute seulement pendant que tu maintiens la touche. Ta voix est transcrite sur ton Mac et rien n'est enregistré.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+          <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Ta touche pour parler</h1>
+          <kbd style="font-family: Inter, sans-serif; font-size: 20px; font-weight: 600; color: #1d1d1f; background: #f5f5f7; border: 1px solid #d2d2d7; border-bottom-width: 3px; border-radius: 10px; padding: 10px 22px;">⌥ droite</kbd>
+          <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #6e6e73; max-width: 470px;">Maintiens pour parler, relâche pour envoyer. macOS va te demander l'autorisation « Surveillance de l'entrée » : je ne lis aucune autre touche.</p>
+          <a href="#" style="font-size: 13px;">Utiliser ⌃⌥Espace à la place</a>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}">
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center;">
+          <h1 style="margin: 0 0 4px; font-size: 26px; font-weight: 700; letter-spacing: -0.02em;">Choisis ma voix</h1>
+          <div style="width: 100%; border: 1px solid #e5e5ea; border-radius: 14px; overflow: hidden; text-align: left;">
+            <sc-for list="{{ voices }}" as="item" hint-placeholder-count="3">
+              <div style="{{ item.style }}">
+                <button type="button" onClick="{{ item.pick }}" aria-label="{{ item.choose }}" style="{{ item.radio }}"></button>
+                <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
+                  <span style="font-size: 14px; font-weight: 600;">{{ item.name }}</span>
+                  <span style="font-size: 12px; color: #6e6e73;">{{ item.desc }}</span>
+                </div>
+                <button type="button" aria-label="{{ item.listen }}" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: #f2f2f5; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#1d1d1f" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ s5 }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+          <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.02em;">C'est prêt</h1>
+          <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #6e6e73; max-width: 470px;">Maintiens <strong style="color: #1d1d1f;">⌥ droite</strong> et demande-moi quelque chose, par exemple « Parle-moi de Napoléon » ou « Quelle est l'actualité aujourd'hui ? ».</p>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="height: 76px; flex-shrink: 0; display: flex; align-items: center; padding: 0 28px; gap: 12px;">
+    <div style="display: flex; gap: 6px;">
+      <sc-for list="{{ dots }}" as="item" hint-placeholder-count="6">
+        <span style="{{ item.style }}"></span>
+      </sc-for>
+    </div>
+    <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}">
+      <button type="button" onClick="{{ back }}" style="margin-left: auto; height: 36px; padding: 0 16px; border-radius: 999px; border: none; background: #f2f2f5; color: #1d1d1f; font-weight: 600; font-size: 14px; cursor: pointer;">Retour</button>
+    </sc-if>
+    <button type="button" onClick="{{ next }}" style="{{ nextStyle }}">{{ nextLabel }}</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":760,"height":560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const i = st.i || 0;
+    const voice = st.voice || 'animal';
+    const SPR = ['/_blob/57e34c9ebf1e28628ab230408684f9b1', '/_blob/8d3cc3e603ee964468bb1de94e9daa17', '/_blob/3581c5fe5df004367a106485556924b7',
+      '/_blob/3581c5fe5df004367a106485556924b7', '/_blob/f78379703cfb327b79996d247cd89eb7', '/_blob/b27aeb1639973aff112de731be09158b'];
+    const dots = [0, 1, 2, 3, 4, 5].map((k) => ({ style: 'height: 6px; border-radius: 3px; width: ' + (k === i ? '22px' : '6px') + '; background: ' + (k <= i ? '#0f9f8f' : '#d2d2d7') + ';' }));
+    const vdefs = [
+      ['animal', 'Langage animal', 'Petits sons de loutre au rythme du texte · gratuit'],
+      ['apple', 'Voix Apple', 'Voix intégrée au Mac · gratuit, hors ligne'],
+      ['premium', 'Voix premium', 'ElevenLabs, OpenAI, Cartesia… avec ton compte']
+    ];
+    const voices = vdefs.map(([id, name, desc], k) => ({
+      name, desc, listen: 'Écouter ' + name, choose: 'Choisir ' + name,
+      pick: () => this.setState({ voice: id }),
+      radio: 'width: 20px; height: 20px; border-radius: 50%; cursor: pointer; flex-shrink: 0; padding: 0; ' + (id === voice ? 'border: 6px solid #0f9f8f; background: #ffffff;' : 'border: 1.5px solid #c7c7cc; background: #ffffff;'),
+      style: 'display: flex; align-items: center; gap: 14px; padding: 12px 14px; ' + (k > 0 ? 'border-top: 1px solid #ececf0;' : '') + (id === voice ? ' background: #f2faf8;' : '')
+    }));
+    return {
+      sprite: SPR[i], dots, voices,
+      s0: i === 0, s1: i === 1, s2: i === 2, s3: i === 3, s4: i === 4, s5: i === 5,
+      canBack: i > 0,
+      nextStyle: (i > 0 ? '' : 'margin-left: auto; ') + 'height: 36px; padding: 0 20px; border-radius: 999px; border: none; background: #0b7d71; color: #ffffff; font-weight: 600; font-size: 14px; cursor: pointer;',
+      nextLabel: i === 0 ? 'Commencer' : i === 2 ? 'Autoriser le micro' : i === 3 ? 'Autoriser' : i === 5 ? 'Terminer' : 'Continuer',
+      next: () => this.setState({ i: i === 5 ? 0 : i + 1 }),
+      back: () => this.setState({ i: Math.max(0, i - 1) })
+    };
+  }
+}
+</script>
+</body>
+</html>

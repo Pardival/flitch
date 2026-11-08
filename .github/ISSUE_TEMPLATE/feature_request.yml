@@ -1,0 +1,15 @@
+name: Feature request
+description: Suggest an idea for Flitch
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like Flitch to do?
+      description: Describe the situation and why it matters to you.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: How could it work?

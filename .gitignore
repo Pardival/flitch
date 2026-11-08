@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Xcode / SwiftPM
+*.xcodeproj
+*.xcworkspace
+xcuserdata/
+DerivedData/
+.build/
+.swiftpm/
+build/
+
+# Python (art scripts)
+__pycache__/
+*.pyc
+.venv/
+
+# Secrets — never commit
+*.env
+.env*
+config.local.json

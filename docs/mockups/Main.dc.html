@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Flitch · conversation</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0b7d71}a:hover{color:#075e55}
+.px{image-rendering:pixelated}
+.glass{background:rgba(255,255,255,.78);-webkit-backdrop-filter:blur(24px) saturate(1.6);backdrop-filter:blur(24px) saturate(1.6);border:1px solid rgba(255,255,255,.7);box-shadow:0 12px 40px rgba(16,24,40,.22),0 1px 2px rgba(16,24,40,.08)}
+.wave{animation:fl-wave .9s ease-in-out infinite alternate}
+.wave:nth-child(2){animation-delay:.15s}.wave:nth-child(3){animation-delay:.3s}.wave:nth-child(4){animation-delay:.05s}.wave:nth-child(5){animation-delay:.22s}.wave:nth-child(6){animation-delay:.38s}.wave:nth-child(7){animation-delay:.1s}
+@keyframes fl-wave{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+.shimmer{background:linear-gradient(90deg,#6e6e73 0%,#1d1d1f 45%,#6e6e73 90%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:fl-shim 1.6s linear infinite}
+@keyframes fl-shim{from{background-position:100% 0}to{background-position:-100% 0}}
+.drain{animation:fl-drain 15s linear forwards}
+@keyframes fl-drain{from{width:100%}to{width:0%}}
+</style>
+</helmet>
+<div style="width: 1280px; height: 880px; position: relative; overflow: hidden; font-family: Inter, system-ui, sans-serif; color: #1d1d1f; background: #f5f5f7;">
+
+  <!-- desktop -->
+  <div style="position: absolute; left: 0; top: 0; width: 1280px; height: 800px; overflow: hidden; background: #1c2b3d;">
+    <div style="position: absolute; left: -200px; top: 260px; width: 900px; height: 900px; border-radius: 50%; background: #2f5d73; filter: blur(120px);"></div>
+    <div style="position: absolute; left: 700px; top: -300px; width: 800px; height: 800px; border-radius: 50%; background: #5a4a8a; filter: blur(140px);"></div>
+    <div style="position: absolute; left: 820px; top: 480px; width: 600px; height: 600px; border-radius: 50%; background: #1f7f78; filter: blur(130px);"></div>
+
+    <!-- menu bar -->
+    <div style="position: absolute; left: 0; top: 0; width: 1280px; height: 28px; background: rgba(255, 255, 255, 0.2); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; box-sizing: border-box; font-size: 13px; color: #ffffff;">
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <strong style="font-weight: 600;">Finder</strong><span>Fichier</span><span>Édition</span><span>Présentation</span>
+      </div>
+      <div style="display: flex; gap: 16px; align-items: center;">
+        <img class="px" src="/_blob/8d3cc3e603ee964468bb1de94e9daa17" alt="Icône Flitch" style="width: 20px; height: 20px;">
+        <span>dim. 8 nov.  14:32</span>
+      </div>
+    </div>
+
+    <!-- context window -->
+    <div style="position: absolute; left: 330px; top: 120px; width: 620px; height: 440px; background: rgba(255,255,255,0.92); border-radius: 16px; box-shadow: 0 30px 60px rgba(0,0,0,0.35); overflow: hidden;">
+      <div style="height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-bottom: 1px solid #ececf0;">
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f57;"></span>
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: #febc2e;"></span>
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: #28c840;"></span>
+      </div>
+      <div style="padding: 28px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="height: 12px; width: 55%; background: #ececf0; border-radius: 6px;"></div>
+        <div style="height: 12px; width: 82%; background: #f2f2f5; border-radius: 6px;"></div>
+        <div style="height: 12px; width: 70%; background: #f2f2f5; border-radius: 6px;"></div>
+        <div style="height: 170px; width: 100%; background: #f5f5f8; border-radius: 12px;"></div>
+      </div>
+    </div>
+
+    <!-- dock -->
+    <div class="glass" style="position: absolute; left: 400px; top: 724px; width: 480px; height: 64px; border-radius: 22px; background: rgba(255,255,255,0.28); display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <span style="width: 46px; height: 46px; border-radius: 12px; background: #5e9fd1;"></span>
+      <span style="width: 46px; height: 46px; border-radius: 12px; background: #f2a65a;"></span>
+      <span style="width: 46px; height: 46px; border-radius: 12px; background: #7cc47f;"></span>
+      <span style="width: 46px; height: 46px; border-radius: 12px; background: #e27d92;"></span>
+      <span style="width: 46px; height: 46px; border-radius: 12px; background: #a990e0;"></span>
+      <span style="width: 46px; height: 46px; border-radius: 12px; background: #f4f4f6;"></span>
+      <span style="width: 46px; height: 46px; border-radius: 12px; background: #3fb8ad;"></span>
+    </div>
+
+    <!-- FLITCH -->
+    <sc-if value="{{ visible }}" hint-placeholder-val="{{ true }}">
+      <div style="{{ overlayStyle }}">
+        <div style="width: 96px; height: 72px; overflow: hidden; position: relative; flex-shrink: 0;">
+          <img class="px" src="{{ sprite }}" alt="La loutre Flitch" style="{{ spriteStyle }}">
+        </div>
+
+        <div style="{{ bubbleWrap }}">
+          <sc-if value="{{ isListen }}" hint-placeholder-val="{{ false }}">
+            <div class="glass" style="border-radius: 20px; padding: 14px 18px; width: 320px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 3px; height: 22px;">
+                  <span class="wave" style="width: 3px; height: 22px; border-radius: 2px; background: #0f9f8f;"></span>
+                  <span class="wave" style="width: 3px; height: 22px; border-radius: 2px; background: #0f9f8f;"></span>
+                  <span class="wave" style="width: 3px; height: 22px; border-radius: 2px; background: #0f9f8f;"></span>
+                  <span class="wave" style="width: 3px; height: 22px; border-radius: 2px; background: #0f9f8f;"></span>
+                  <span class="wave" style="width: 3px; height: 22px; border-radius: 2px; background: #0f9f8f;"></span>
+                  <span class="wave" style="width: 3px; height: 22px; border-radius: 2px; background: #0f9f8f;"></span>
+                  <span class="wave" style="width: 3px; height: 22px; border-radius: 2px; background: #0f9f8f;"></span>
+                </div>
+                <span style="font-size: 15px; font-weight: 600;">Je t'écoute</span>
+              </div>
+              <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #3a3a3c;">Parle-moi de Napoléon</p>
+              <span style="font-size: 12px; color: #6e6e73;">Relâche ⌥ pour envoyer</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isThink }}" hint-placeholder-val="{{ false }}">
+            <div class="glass" style="border-radius: 999px; padding: 10px 18px; display: flex; align-items: center; gap: 12px;">
+              <span class="shimmer" style="font-size: 15px; font-weight: 600;">Je réfléchis…</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isTalk }}" hint-placeholder-val="{{ false }}">
+            <div class="glass" style="border-radius: 20px; padding: 16px 18px; width: 360px; display: flex; flex-direction: column; gap: 10px;">
+              <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #1d1d1f;">Napoléon Bonaparte est né en 1769 à Ajaccio, en Corse. Général brillant pendant la Révolution, il prend le pouvoir en 1799 <span style="color: #8e8e93;">puis se fait sacrer empereur…</span></p>
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6e6e73;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0b7d71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+                <span>Lecture en cours · ⌥ pour l'interrompre</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isLinger }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px; width: 360px;">
+              <a href="#" onClick="{{ openCard }}" class="glass" style="text-decoration: none; color: #1d1d1f; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="padding: 16px 18px 12px; display: flex; flex-direction: column; gap: 8px;">
+                  <p style="margin: 0; font-size: 15px; line-height: 1.5;">… battu à Waterloo en 1815, il meurt en exil à Sainte-Hélène en 1821.</p>
+                  <span style="font-size: 12px; color: #0b7d71; font-weight: 600;">Ouvrir la réponse complète</span>
+                </div>
+                <div style="height: 3px; background: rgba(0,0,0,0.06);">
+                  <div class="drain" style="height: 3px; background: #0f9f8f;"></div>
+                </div>
+              </a>
+              <div class="glass" style="border-radius: 16px; padding: 8px 8px 8px 14px; display: flex; align-items: center; gap: 8px; font-size: 13px;">
+                <span style="flex-grow: 1; color: #3a3a3c;">Je retiens que tu aimes l'histoire ?</span>
+                <button type="button" style="height: 30px; padding: 0 12px; border-radius: 999px; border: none; background: #0b7d71; color: #ffffff; font-size: 13px; font-weight: 600; cursor: pointer;">Oui</button>
+                <button type="button" style="height: 30px; padding: 0 12px; border-radius: 999px; border: none; background: rgba(0,0,0,0.06); color: #1d1d1f; font-size: 13px; font-weight: 600; cursor: pointer;">Non</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isCard }}" hint-placeholder-val="{{ false }}">
+            <div class="glass" style="border-radius: 22px; width: 460px; display: flex; flex-direction: column; background: rgba(255,255,255,0.9);">
+              <div style="padding: 16px 18px 10px; display: flex; align-items: flex-start; gap: 12px;">
+                <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-size: 12px; color: #6e6e73;">Tu as demandé</span>
+                  <span style="font-size: 17px; font-weight: 600;">Parle-moi de Napoléon</span>
+                </div>
+                <button type="button" onClick="{{ closeCard }}" aria-label="Fermer" style="width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(0,0,0,0.06); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3a3a3c" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+                </button>
+              </div>
+              <div style="padding: 4px 18px 14px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.6; color: #3a3a3c;">
+                <p style="margin: 0;">Napoléon Bonaparte est né en 1769 à Ajaccio, en Corse. Général brillant pendant la Révolution, il prend le pouvoir en 1799 puis se fait sacrer empereur des Français en 1804.</p>
+                <p style="margin: 0;">Il réforme profondément la France, avec le Code civil, les lycées ou la Banque de France, et domine l'Europe par ses victoires, comme Austerlitz.</p>
+                <p style="margin: 0;">Après la désastreuse campagne de Russie en 1812, il abdique, revient pendant les Cent-Jours, puis est battu à Waterloo en 1815. Il meurt en exil à Sainte-Hélène en 1821.</p>
+              </div>
+              <div style="padding: 12px 18px 16px; display: flex; gap: 8px; align-items: center; border-top: 1px solid rgba(0,0,0,0.07);">
+                <button type="button" style="height: 32px; padding: 0 14px; border-radius: 999px; border: none; background: #0b7d71; color: #ffffff; font-weight: 600; font-size: 13px; cursor: pointer;">Copier</button>
+                <button type="button" style="height: 32px; padding: 0 14px; border-radius: 999px; border: none; background: rgba(0,0,0,0.06); color: #1d1d1f; font-weight: 600; font-size: 13px; cursor: pointer;">Historique</button>
+                <button type="button" aria-label="Réécouter" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(0,0,0,0.06); cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d1d1f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+                </button>
+                <span style="margin-left: auto; font-size: 12px; color: #6e6e73;">via ChatGPT</span>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <!-- prototype controls -->
+  <div style="position: absolute; left: 0; top: 800px; width: 1280px; height: 80px; box-sizing: border-box; padding: 0 28px; display: flex; align-items: center; gap: 32px; background: #f5f5f7; border-top: 1px solid #e5e5ea;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 13px; font-weight: 600; color: #6e6e73;">Étape</span>
+      <div style="display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #e7e7ec;">
+        <sc-for list="{{ steps }}" as="item" hint-placeholder-count="6">
+          <button type="button" onClick="{{ item.pick }}" style="{{ item.style }}">{{ item.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 13px; font-weight: 600; color: #6e6e73;">Coin</span>
+      <div style="display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: #e7e7ec;">
+        <sc-for list="{{ corners }}" as="item" hint-placeholder-count="4">
+          <button type="button" onClick="{{ item.pick }}" aria-label="{{ item.aria }}" style="{{ item.style }}">{{ item.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":880}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const s = st.s || 'talk';
+    const corner = st.corner || 'tl';
+    const top = corner[0] === 't';
+    const left = corner[1] === 'l';
+    const PEEK = {
+      listen: ['/_blob/6ec157cd20290904d9646b3fe958e3a5', '/_blob/95f83b053e3f74c45b33404c68ce939e'],
+      think: ['/_blob/2dad3f4c5fc2a28b059655cb861a3688', '/_blob/a652a196a4027d52e0387f72e4d4f886'],
+      talk: ['/_blob/384d8adff7afec2a5974cb827957d37b', '/_blob/7bb8ff0da269f872c7683bca8dd989bf'],
+      linger: ['/_blob/ad21a68df34b309e61fa5cab6b449810', '/_blob/d7f95b311f35f965122fa3cfa74eaf23']
+    };
+    const key = s === 'card' ? 'linger' : (PEEK[s] ? s : 'listen');
+    const sprite = PEEK[key][top ? 0 : 1];
+    const spriteStyle = 'width: 96px; height: 96px; position: absolute; left: 0; top: ' + (top ? '0' : '-24px') + ';';
+    const seg = (on) => 'height: 32px; padding: 0 12px; border-radius: 8px; border: none; font-size: 13px; font-weight: 500; cursor: pointer; font-family: Inter, sans-serif; ' +
+      (on ? 'background: #ffffff; color: #1d1d1f; box-shadow: 0 1px 3px rgba(0,0,0,0.15);' : 'background: transparent; color: #3a3a3c;');
+    const stepDefs = [['hidden', 'Cachée'], ['listen', 'Écoute'], ['think', 'Réflexion'], ['talk', 'Réponse'], ['linger', 'Reste 15 s'], ['card', 'Réponse ouverte']];
+    const steps = stepDefs.map(([id, label]) => ({ label, style: seg(id === s), pick: () => this.setState({ s: id }) }));
+    const cornerDefs = [['tl', '↖', 'Coin haut gauche'], ['tr', '↗', 'Coin haut droit'], ['bl', '↙', 'Coin bas gauche'], ['br', '↘', 'Coin bas droit']];
+    const corners = cornerDefs.map(([id, label, aria]) => ({ label, aria, style: seg(id === corner) + ' width: 40px; padding: 0;', pick: () => this.setState({ corner: id }) }));
+    const pos = (top ? 'top: 28px;' : 'bottom: 0;') + (left ? ' left: 36px;' : ' right: 36px;');
+    const overlayStyle = 'position: absolute; ' + pos + ' display: flex; gap: 12px; flex-direction: ' + (left ? 'row' : 'row-reverse') + '; align-items: ' + (top ? 'flex-start' : 'flex-end') + ';';
+    const bubbleWrap = top ? 'margin-top: 16px;' : 'margin-bottom: 16px;';
+    return {
+      steps, corners, overlayStyle, bubbleWrap, sprite, spriteStyle,
+      visible: s !== 'hidden',
+      isListen: s === 'listen', isThink: s === 'think', isTalk: s === 'talk', isLinger: s === 'linger', isCard: s === 'card',
+      openCard: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ s: 'card' }); },
+      closeCard: () => this.setState({ s: 'hidden' })
+    };
+  }
+}
+</script>
+</body>
+</html>

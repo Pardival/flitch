@@ -1,0 +1,35 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Hold right ⌥\n2. Ask …\n3. …"
+  - type: input
+    id: version
+    attributes:
+      label: Flitch version
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+  - type: dropdown
+    id: provider
+    attributes:
+      label: AI provider
+      options: [ChatGPT, OpenRouter, Anthropic key, OpenAI key, Gemini key, Other key, Local model, Not relevant]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: "Output of `log stream --predicate 'process == \"Flitch\"'`. Remove anything private. Never paste API keys."
+      render: text
