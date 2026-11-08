@@ -24,7 +24,7 @@ let package = Package(
         .target(name: "FlitchVoice", dependencies: ["FlitchCore"]),
         .target(name: "FlitchMemory", dependencies: ["FlitchCore", .product(name: "GRDB", package: "GRDB.swift")]),
         .target(name: "FlitchCharacter", dependencies: ["FlitchCore"]),
-        .target(name: "FlitchStage", dependencies: ["FlitchCore", "FlitchCharacter"]),
+        .target(name: "FlitchStage", dependencies: ["FlitchCore", "FlitchCharacter"], resources: [.process("Resources")]),
 
         .testTarget(name: "FlitchCoreTests", dependencies: ["FlitchCore"], exclude: ["__Snapshots__"]),
         .testTarget(name: "FlitchProvidersTests", dependencies: ["FlitchProviders"], resources: [.copy("Fixtures")]),
