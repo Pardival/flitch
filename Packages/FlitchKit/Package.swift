@@ -20,14 +20,14 @@ let package = Package(
     ],
     targets: [
         .target(name: "FlitchCore", resources: [.process("Resources")]),
-        .target(name: "FlitchProviders", dependencies: ["FlitchCore"], resources: [.process("Resources")]),
+        .target(name: "FlitchProviders", dependencies: ["FlitchCore", "FlitchVoice"], resources: [.process("Resources")]),
         .target(name: "FlitchVoice", dependencies: ["FlitchCore"]),
         .target(name: "FlitchMemory", dependencies: ["FlitchCore", .product(name: "GRDB", package: "GRDB.swift")]),
         .target(name: "FlitchCharacter", dependencies: ["FlitchCore"]),
         .target(name: "FlitchStage", dependencies: ["FlitchCore", "FlitchCharacter"], resources: [.process("Resources")]),
 
         .testTarget(name: "FlitchCoreTests", dependencies: ["FlitchCore"], exclude: ["__Snapshots__"]),
-        .testTarget(name: "FlitchProvidersTests", dependencies: ["FlitchProviders"], resources: [.copy("Fixtures")]),
+        .testTarget(name: "FlitchProvidersTests", dependencies: ["FlitchProviders", "FlitchVoice"], resources: [.copy("Fixtures")]),
         .testTarget(name: "FlitchVoiceTests", dependencies: ["FlitchVoice"]),
         .testTarget(name: "FlitchMemoryTests", dependencies: ["FlitchMemory"]),
         .testTarget(name: "FlitchCharacterTests", dependencies: ["FlitchCharacter"]),

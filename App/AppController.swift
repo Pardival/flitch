@@ -211,13 +211,39 @@ enum VoiceFactory {
         engine: FlitchSettings.VoiceEngine, settings: FlitchSettings, character: LoadedCharacter,
         credentials: CredentialStore
     ) async -> any SentenceSynthesizer {
+        let speed = settings.voiceSpeed
+        let voiceID = settings.voiceID(for: engine)
+        func key() async -> String? {
+            guard let id = engine.credentialID else { return nil }
+            return try? await credentials.credential(for: id)?.secret
+        }
         switch engine {
+        case .animal:
+            return animal(character, speed: speed)
         case .apple:
-            return AppleVoice(
-                voiceIdentifier: settings.voiceID(for: .apple),
-                rate: Float(0.5 * settings.voiceSpeed).clamped(0.3, 0.65))
-        default:
-            return animal(character, speed: settings.voiceSpeed)
+            return AppleVoice(voiceIdentifier: voiceID, rate: Float(0.5 * speed).clamped(0.3, 0.65))
+        case .elevenLabs:
+            guard let k = await key() else { return animal(character, speed: speed) }
+            return ElevenLabsVoice(apiKey: k, voiceID: voiceID ?? "21m00Tcm4TlvDq8ikWAM", speed: speed)
+        case .openAI:
+            guard let k = await key() else { return animal(character, speed: speed) }
+            return OpenAIVoice(apiKey: k, voice: voiceID ?? "coral", speed: speed)
+        case .cartesia:
+            guard let k = await key() else { return animal(character, speed: speed) }
+            var id = voiceID
+            if id == nil {
+                let all = (try? await CartesiaVoice.voices(apiKey: k)) ?? []
+                id = (all.first { $0.language == settings.language.rawValue } ?? all.first)?.id
+                if let id { settings.setVoiceID(id, for: .cartesia) }
+            }
+            guard let id else { return animal(character, speed: speed) }
+            return CartesiaVoice(apiKey: k, voiceID: id)
+        case .mistral:
+            guard let k = await key() else { return animal(character, speed: speed) }
+            return MistralVoice(apiKey: k, voiceID: voiceID ?? "gb_jane_neutral")
+        case .gemini:
+            guard let k = await key() else { return animal(character, speed: speed) }
+            return GeminiVoice(apiKey: k, voice: voiceID ?? "Kore")
         }
     }
 

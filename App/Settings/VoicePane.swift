@@ -7,6 +7,7 @@ struct VoicePane: View {
     let app: AppController
     @Bindable var settings: FlitchSettings
     @State private var keyEngine: FlitchSettings.VoiceEngine?
+    @State private var designError: String?
 
     init(app: AppController) {
         self.app = app
@@ -47,10 +48,23 @@ struct VoicePane: View {
                         Link(destination: AppleVoice.downloadVoicesURL) { Text("Download better voices…") }
                     }
                 }
-                if let catalog = VoiceCatalog.voices[settings.voiceEngine], !catalog.isEmpty {
+                if !voices.isEmpty {
                     Picker("Voice", selection: cloudVoice) {
-                        ForEach(catalog, id: \.id) { v in Text(verbatim: v.name).tag(v.id) }
+                        ForEach(voices, id: \.id) { v in Text(verbatim: v.name).tag(v.id) }
                     }
+                }
+                if settings.voiceEngine == .elevenLabs {
+                    Button {
+                        Task { designError = await app.preview.createSignatureVoice() }
+                    } label: {
+                        if app.preview.designing {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Label("Create Flitch's signature voice", systemImage: "wand.and.stars")
+                        }
+                    }
+                    .disabled(app.preview.designing)
+                    if let designError { Text(designError).foregroundStyle(.red).font(.callout) }
                 }
                 LabeledContent("Speed") {
                     HStack {
@@ -64,6 +78,7 @@ struct VoicePane: View {
         .formStyle(.grouped)
         .navigationTitle(Text("Voice"))
         .sheet(item: $keyEngine) { engine in VoiceKeySheet(engine: engine, app: app) }
+        .task(id: settings.voiceEngine) { await app.preview.loadVoices(settings.voiceEngine) }
     }
 
     private var appleVoice: Binding<String> {
@@ -72,10 +87,18 @@ struct VoicePane: View {
             set: { settings.setVoiceID($0.isEmpty ? nil : $0, for: .apple) })
     }
 
+    private var voices: [VoiceCatalog.Voice] {
+        if let fetched = app.preview.cloudVoices[settings.voiceEngine] {
+            return fetched.map { VoiceCatalog.Voice(id: $0.id, name: $0.name) }
+        }
+        return VoiceCatalog.voices[settings.voiceEngine] ?? []
+    }
+
     private var cloudVoice: Binding<String> {
         let engine = settings.voiceEngine
+        let first = voices.first?.id ?? ""
         return Binding(
-            get: { settings.voiceID(for: engine) ?? VoiceCatalog.voices[engine]?.first?.id ?? "" },
+            get: { settings.voiceID(for: engine) ?? first },
             set: { settings.setVoiceID($0, for: engine) })
     }
 }

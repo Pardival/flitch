@@ -136,7 +136,7 @@ public final class EngineAudioPlayer: AudioPlaying, @unchecked Sendable {
 
 extension AVAudioPCMBuffer {
     /// Float32 mono buffer from samples.
-    static func mono(_ samples: [Float], sampleRate: Double) -> AVAudioPCMBuffer? {
+    public static func mono(_ samples: [Float], sampleRate: Double) -> AVAudioPCMBuffer? {
         guard let format = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1),
             let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: AVAudioFrameCount(max(1, samples.count)))
         else { return nil }

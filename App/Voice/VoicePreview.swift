@@ -10,6 +10,9 @@ import Observation
 @Observable
 final class VoicePreview {
     var playing: FlitchSettings.VoiceEngine?
+    /// Voices fetched from the provider (ElevenLabs, Cartesia).
+    var cloudVoices: [FlitchSettings.VoiceEngine: [CloudVoice]] = [:]
+    var designing = false
     private(set) var keys: Set<String> = []
     @ObservationIgnored private var cache: [String: AudioClip] = [:]
     @ObservationIgnored private weak var app: AppController?
@@ -43,6 +46,43 @@ final class VoicePreview {
         do {
             try await app.credentials.save(.apiKey(key), for: id)
             await reloadKeys()
+            return nil
+        } catch {
+            return FlitchError(error)?.userMessage
+        }
+    }
+
+    func loadVoices(_ engine: FlitchSettings.VoiceEngine) async {
+        guard let app, let id = engine.credentialID, cloudVoices[engine] == nil,
+            let key = try? await app.credentials.credential(for: id)?.secret
+        else { return }
+        switch engine {
+        case .elevenLabs: cloudVoices[engine] = try? await ElevenLabsVoice.voices(apiKey: key)
+        case .cartesia:
+            let lang = app.settings.language.rawValue
+            cloudVoices[engine] = (try? await CartesiaVoice.voices(apiKey: key))?.filter {
+                $0.language == nil || $0.language == lang
+            }
+        default: break
+        }
+    }
+
+    /// Designs Flitch's voice in the user's ElevenLabs account and selects it. Returns an error message or nil.
+    func createSignatureVoice() async -> String? {
+        guard let app, let key = try? await app.credentials.credential(for: "elevenlabs")?.secret else { return nil }
+        designing = true
+        defer { designing = false }
+        do {
+            let designer = ElevenLabsVoiceDesigner(apiKey: key)
+            let sample = String(repeating: VoiceCatalog.sample(app.settings.language) + " ", count: 3)
+            guard let preview = try await designer.design(sampleText: sample).first else {
+                return FlitchError.other("ElevenLabs returned no voice").userMessage
+            }
+            let id = try await designer.create(preview)
+            app.settings.setVoiceID(id, for: .elevenLabs)
+            app.settings.voiceEngine = .elevenLabs
+            cloudVoices[.elevenLabs] = nil
+            await loadVoices(.elevenLabs)
             return nil
         } catch {
             return FlitchError(error)?.userMessage

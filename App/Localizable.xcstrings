@@ -1836,6 +1836,23 @@
           }
         }
       }
+    },
+    "Create Flitch's signature voice": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Créer la voix signature de Flitch"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear la voz característica de Flitch"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
