@@ -156,7 +156,9 @@ public final class ConversationOrchestrator {
         guard phase == .listening else { return }
         let session = sessionTask
         stopPumps()
+        FlitchLog.info("shortcut released after \(pressElapsed)")
         if pressElapsed < config.minimumPress {
+            FlitchLog.info("press too short, ignored")
             Task { await session?.value?.cancel() }
             hide()
             return
@@ -201,6 +203,7 @@ public final class ConversationOrchestrator {
     // MARK: - Turn
 
     private func startListening() {
+        FlitchLog.info("listening")
         lastFailedQuestion = nil
         generation += 1
         let gen = generation
@@ -260,8 +263,9 @@ public final class ConversationOrchestrator {
         }
         guard generation == gen, !Task.isCancelled else { return }
         timings.transcript = elapsed()
+        FlitchLog.info("transcript: \(heard.count) characters")
         guard !heard.isEmpty else {
-            hide()
+            fail(FlitchError.nothingHeard, generation: gen)  // say so instead of vanishing silently
             return
         }
         emit(.transcribed(heard))
@@ -297,6 +301,7 @@ public final class ConversationOrchestrator {
             tools: provider.capabilities.contains(.tools) ? deps.tools() : []
         )
         answerSoFar = ""
+        var calledTools = false
         let (sentences, continuation) = AsyncThrowingStream<String, Error>.makeStream()
         let producer = Task { [weak self] in
             var chunker = SentenceChunker(firstChunkMinLength: 60)
@@ -315,6 +320,7 @@ public final class ConversationOrchestrator {
                     case .citation(let c):
                         self.emit(.citation(c))
                     case .toolCall(let call):
+                        calledTools = true
                         self.onToolCall?(call)
                     case .done:
                         break
@@ -352,7 +358,13 @@ public final class ConversationOrchestrator {
         let answer = answerSoFar.trimmingCharacters(in: .whitespacesAndNewlines)
         answerSoFar = ""
         guard !answer.isEmpty else {
-            fail(FlitchError.other("empty answer"), generation: gen)
+            if calledTools {
+                // e.g. only `remember`: the bubble shows the memory, nothing to say
+                conversation.removeLast()
+                startLingering()
+            } else {
+                fail(FlitchError.other("empty answer"), generation: gen)
+            }
             return
         }
         conversation.append(.assistant(answer))

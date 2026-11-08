@@ -203,6 +203,9 @@ def draw_eyes(c: Canvas, style: str, oy: int):
             c.set(x - 1, y + 1, "eye"); c.set(x, y, "eye"); c.set(x + 1, y, "eye"); c.set(x + 2, y + 1, "eye")
         elif style == "blink":
             c.rect(x - 1, y + 1, x + 2, y + 1, "eye")
+        elif style in ("left", "right"):
+            ox = -1 if style == "left" else 1
+            c.rect(x + ox, y, x + 1 + ox, y + 1, "eye"); c.set(x + ox + (1 if ox > 0 else 0), y, "white")
 
 
 def draw_mouth(c: Canvas, style: str, oy: int):
@@ -261,6 +264,8 @@ def draw_arms(c: Canvas, style="hold", dy=0, lift=0.0, wave=0.0):
             c.set(x, 23 + dy, "shellD")
         c.blob(23.8 - lift * 0.6, 13.6 + dy + lift, 2.6, 2.2, "stone", shade="stoneD", light="stoneL")
         L((11.6, 19.6), (13.4, 23.4)); L((21.0, 19.0), (23.4 - lift * 0.6, 15.6 + lift))
+    elif style == "none":
+        pass
     elif style == "edge":     # both paws gripping the screen edge (peek)
         c.blob(9.0, 22.4 + dy, 2.3, 1.7, "fur", shade="furD")
         c.blob(23.0, 22.4 + dy, 2.3, 1.7, "fur", shade="furD")
@@ -404,6 +409,132 @@ def animations():
     }
 
 
+# ---------------------------------------------------------------- dock mode (side view, facing right)
+def side_otter(phase=0.0, bob=0.0, eyes="open", mouth=False):
+    """On all fours, facing right: long low body, flat head, thick tapering tail.
+    `phase` (0..1) drives the leg cycle; the stage mirrors the frame to walk left."""
+    c = Canvas()
+    oy = bob
+    # tail, tapering to the left
+    es = []
+    for i in range(14):
+        t = i / 13
+        es.append((9.5 - 7.5 * t, 25.2 + oy + 1.6 * t, 2.4 - 1.5 * t, 2.0 - 1.1 * t))
+    c.shape(es, "fur", shade="furD")
+    a = phase * 2 * math.pi
+    def leg(x, k, color):
+        sw = math.sin(a + k * math.pi) * 1.6
+        lift = max(0.0, math.cos(a + k * math.pi)) * 1.0
+        c.capsule((x, 26.0 + oy), (x + sw, 29.6 - lift), 1.2, color, shade="out" if color == "furD" else "furD")
+    # far legs (darker), behind the body
+    leg(12.0, 1, "furD"); leg(21.0, 0, "furD")
+    # body + head as one sleek shape
+    c.shape([(13.0, 24.0 + oy, 6.2, 3.6), (18.5, 23.4 + oy, 5.6, 3.5), (24.4, 20.6 + oy, 4.4, 3.4),
+             (28.0, 21.6 + oy, 2.4, 1.9)], "fur", shade="furD", light="furL")
+    # cream throat and belly
+    c.shape([(26.4, 23.0 + oy, 2.6, 1.3), (20.0, 26.0 + oy, 4.6, 1.2), (14.0, 26.6 + oy, 4.0, 0.9)],
+            "cream", outline=False, shade="creamD")
+    # near legs
+    leg(14.0, 0, "fur"); leg(23.0, 1, "fur")
+    o = int(round(oy))
+    # whisker pad, nose, whiskers
+    c.blob(28.6, 22.3 + oy, 1.6, 1.2, "pad", outline=False, shade="padD")
+    c.set(30, 21 + o, "nose"); c.set(31, 21 + o, "nose"); c.set(30, 20 + o, "nose")
+    for x, y in ((30, 23), (31, 23), (31, 24)):
+        c.set(x, y + o, "whisk")
+    if mouth:
+        c.set(28, 23 + o, "mouth"); c.set(29, 23 + o, "mouth")
+    # eye
+    if eyes == "open":
+        c.set(26, 19 + o, "eye"); c.set(27, 19 + o, "eye"); c.set(26, 19 + o, "white"); c.set(27, 20 + o, "eye")
+    else:
+        c.set(26, 20 + o, "eye"); c.set(27, 20 + o, "eye")
+    # headphones: band over the head, one teal cup over the ear
+    for deg in range(195, 350, 4):
+        t = math.radians(deg)
+        x = 23.6 + 4.6 * math.cos(t)
+        y = 20.4 + oy + 4.4 * math.sin(t)
+        c.set(x, y, "band"); c.set(x, y - 1, "out")
+    c.blob(22.6, 20.4 + oy, 1.8, 2.3, "cup", shade="cupD", light="cupL")
+    return c
+
+
+def back_otter(eyes="closed", pebble=0, paws=0, zz=True):
+    """Floating on her back (like otters in the river), pebble on the tummy, head to the right."""
+    c = Canvas()
+    # tail to the left
+    es = [(9.0 - 6.5 * i / 10, 27.6 + 0.6 * i / 10, 2.2 - 1.2 * i / 10, 1.8 - 0.8 * i / 10) for i in range(11)]
+    c.shape(es, "fur", shade="furD")
+    # hind feet up
+    c.capsule((10.5, 26.0), (9.0, 22.6 + paws * 0.5), 1.2, "furD", shade="out")
+    c.shape([(16.0, 27.4, 7.6, 3.2), (25.0, 26.4, 4.4, 3.4)], "fur", shade="furD", light="furL")
+    c.shape([(16.0, 25.4, 6.4, 1.3), (22.6, 25.0, 2.4, 1.1)], "cream", outline=False, shade="creamD")
+    # paws holding the pebble on the tummy
+    py = 23.2 - pebble
+    c.blob(16.2, py, 2.2, 1.7, "stone", shade="stoneD", light="stoneL")
+    c.capsule((13.6, 25.0), (14.4, py + 0.6 + paws * 0.3), 1.0, "fur", shade="furD")
+    c.capsule((19.0, 25.0), (18.2, py + 0.6 + paws * 0.3), 1.0, "fur", shade="furD")
+    # face (seen from the side, looking up)
+    c.blob(28.4, 25.0, 1.6, 1.2, "pad", outline=False, shade="padD")
+    c.set(30, 24, "nose"); c.set(30, 25, "nose")
+    if eyes == "closed":
+        c.set(26, 24, "eye"); c.set(27, 24, "eye")
+    else:
+        c.set(26, 24, "eye"); c.set(27, 24, "eye"); c.set(26, 23, "eye"); c.set(27, 23, "white")
+    # headphones
+    for deg in range(190, 350, 4):
+        t = math.radians(deg)
+        c.set(25.0 + 4.4 * math.cos(t), 26.0 + 4.0 * math.sin(t), "band")
+    c.blob(24.2, 26.4, 1.7, 2.1, "cup", shade="cupD", light="cupL")
+    if zz:
+        draw_zz(c, 22, 12)
+    return c
+
+
+def juggle_frame(i, n=8):
+    """Sitting up, tossing two pebbles in an arc above the head."""
+    c = otter(eyes="up", mouth="smile", arms="up", curl=0.2)
+    for k in range(2):
+        t = ((i / n) + k * 0.5) % 1.0
+        x = 6.0 + 20.0 * t
+        y = 11.0 - 10.0 * math.sin(math.pi * t)
+        c.blob(x, y, 2.4, 2.1, "stone", shade="stoneD", light="stoneL")
+    return c
+
+
+def groom_frame(i):
+    """Rubbing the face with both paws, eyes closed."""
+    c = otter(eyes="closed", mouth="calm", arms="none")
+    d = (0, -1, 0, 1, 0, -1)[i % 6]
+    for side in (-1, 1):
+        x = 16 + side * 5.5
+        c.capsule((16 + side * 7.0, 19.5), (x, 14.0 + d * side), 1.6, "fur", shade="furD")
+        c.blob(x - side * 0.4, 13.6 + d * side, 2.2, 1.9, "furD", shade="out")
+    return c
+
+
+def dance_frame(i):
+    arms = "up" if i % 2 == 0 else "wave"
+    c = otter(eyes="happy", mouth="big" if i % 4 == 0 else "smile", arms=arms, dy=-(i % 2), curl=0.4 * (i % 2),
+              wave=1.5 if i % 4 == 1 else -1.5)
+    draw_note(c, 2 if i % 4 < 2 else 25, 1 + (i % 2))
+    return c
+
+
+def dock_animations():
+    return {
+        "walk": [side_otter(phase=k / 6, bob=-0.5 if k % 3 == 1 else 0) for k in range(6)],
+        "look": [otter(eyes=e) for e in ("left", "left", "open", "right", "right", "open")],
+        "juggle": [juggle_frame(k) for k in range(8)],
+        "groom": [groom_frame(k) for k in range(6)],
+        "dance": [dance_frame(k) for k in range(8)],
+        "sleepBack": [back_otter(pebble=p, paws=p) for p in (0, 0, 1, 1)],
+        "wake": [back_otter(eyes="open", zz=False), back_otter(eyes="open", pebble=1, paws=1, zz=False),
+                 otter(eyes="closed", mouth="big", arms="up"), otter(eyes="closed", mouth="big", arms="up"),
+                 otter(eyes="blink"), otter()],
+    }
+
+
 def export_pack(pack_dir: Path, preview_dir: Path):
     sprites = pack_dir / "sprites"
     sprites.mkdir(parents=True, exist_ok=True)
@@ -411,7 +542,7 @@ def export_pack(pack_dir: Path, preview_dir: Path):
         old.unlink()
     preview_dir.mkdir(parents=True, exist_ok=True)
     counts = {}
-    for name, frames in animations().items():
+    for name, frames in {**animations(), **dock_animations()}.items():
         strip = Image.new("RGBA", (W * len(frames), H), (0, 0, 0, 0))
         for i, f in enumerate(frames):
             strip.alpha_composite(f.image(), (i * W, 0))

@@ -28,6 +28,8 @@ public struct CharacterPack: Codable, Sendable, Equatable {
         /// Idle activities with weights, e.g. [["juggle", 0.5], ["groom", 0.3]].
         public var idle: [[WeightedEntry]]?
         public var sleepAfter: Double?
+        /// Dock mode walking speed, in sprite pixels per second.
+        public var walkSpeed: Double?
     }
 
     /// One element of `[name, weight]` pairs.

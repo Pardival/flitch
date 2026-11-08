@@ -306,7 +306,7 @@ public struct GeminiVoice: SentenceSynthesizer {
     }
 }
 
-private func send(_ req: URLRequest, http: HTTPTransport, provider: String, secret: String) async throws -> Data {
+func send(_ req: URLRequest, http: HTTPTransport, provider: String, secret: String) async throws -> Data {
     do {
         return try await http.data(req)
     } catch {

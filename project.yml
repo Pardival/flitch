@@ -16,9 +16,14 @@ settings:
     ENABLE_HARDENED_RUNTIME: YES
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
+    # Sparkle EdDSA public key (base64). Empty = updates disabled (dev builds); the release workflow sets it.
+    SPARKLE_PUBLIC_KEY: ""
 packages:
   FlitchKit:
     path: Packages/FlitchKit
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.7.0"
 targets:
   Flitch:
     type: application
@@ -41,6 +46,8 @@ targets:
         product: FlitchCharacter
       - package: FlitchKit
         product: FlitchStage
+      - package: Sparkle
+        product: Sparkle
     info:
       path: App/Info.plist
       properties:
@@ -51,17 +58,27 @@ targets:
         LSApplicationCategoryType: public.app-category.productivity
         NSMicrophoneUsageDescription: Flitch listens only while you hold the talk shortcut.
         NSSpeechRecognitionUsageDescription: Flitch transcribes your voice on your Mac to understand your question.
+        SUFeedURL: https://github.com/Pardival/flitch/releases/latest/download/appcast.xml
+        SUPublicEDKey: $(SPARKLE_PUBLIC_KEY)
+        SUEnableAutomaticChecks: true
         NSHumanReadableCopyright: "© 2026 The Flitch contributors. MIT licence."
     entitlements:
       path: App/Flitch.entitlements
       properties:
         com.apple.security.device.audio-input: true
+        # ad-hoc signed: Sparkle's framework has no shared team id
+        com.apple.security.cs.disable-library-validation: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.flitch.Flitch
         PRODUCT_NAME: Flitch
         GENERATE_INFOPLIST_FILE: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: ""
+      configs:
+        Debug:
+          # Ad-hoc signing pins the identity to the binary hash, so every rebuild loses the
+          # microphone and Input Monitoring permissions. Pin it to the bundle id for dev builds.
+          OTHER_CODE_SIGN_FLAGS: "--requirements '=designated => identifier \"app.flitch.Flitch\"'"
 schemes:
   Flitch:
     build:

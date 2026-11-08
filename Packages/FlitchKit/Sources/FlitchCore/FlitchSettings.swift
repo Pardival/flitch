@@ -30,7 +30,26 @@ public final class FlitchSettings {
         }
     }
 
+    /// Who turns your voice into text. Apple (on this Mac) by default.
+    public enum SpeechEngine: String, Codable, Sendable, CaseIterable {
+        case apple, openAI, mistral
+        /// Keychain id of the key, shared with the voice engine of the same provider.
+        public var credentialID: String? {
+            switch self {
+            case .apple: nil
+            case .openAI: "openai"
+            case .mistral: "mistral"
+            }
+        }
+    }
+
     @ObservationIgnored private let defaults: UserDefaults
+
+    /// Learned memories: ask before keeping one (default), or keep without asking.
+    public var confirmMemories: Bool { didSet { save("confirmMemories", confirmMemories) } }
+    /// Lets Flitch learn and use memories at all.
+    public var memoriesEnabled: Bool { didSet { save("memoriesEnabled", memoriesEnabled) } }
+    public var historyRetention: HistoryRetention { didSet { save("historyRetention", historyRetention.rawValue) } }
 
     public var mode: Mode { didSet { save("mode", mode.rawValue) } }
     public var corner: Corner { didSet { save("corner", corner.rawValue) } }
@@ -47,6 +66,7 @@ public final class FlitchSettings {
     public var voiceIDs: [String: String] { didSet { save("voiceIDs", voiceIDs) } }
     /// 0.5…2
     public var voiceSpeed: Double { didSet { save("voiceSpeed", voiceSpeed) } }
+    public var speechEngine: SpeechEngine { didSet { save("speechEngine", speechEngine.rawValue) } }
     public var tone: TonePreset { didSet { save("tone", tone.rawValue) } }
     /// Hold right ⌥ (needs Input Monitoring) or use the fallback combo.
     public var useRightOption: Bool { didSet { save("useRightOption", useRightOption) } }
@@ -72,12 +92,16 @@ public final class FlitchSettings {
         voiceEngine = s("voiceEngine").flatMap(VoiceEngine.init) ?? .animal
         voiceIDs = defaults.dictionary(forKey: "flitch.voiceIDs") as? [String: String] ?? [:]
         voiceSpeed = defaults.object(forKey: "flitch.voiceSpeed") as? Double ?? 1
+        speechEngine = s("speechEngine").flatMap(SpeechEngine.init) ?? .apple
         tone = s("tone").flatMap(TonePreset.init) ?? .enthusiastic
         useRightOption = b("useRightOption", true)
         fallbackKeyCode = i("fallbackKeyCode", 49)  // Space
         fallbackModifiers = i("fallbackModifiers", 0x1000 | 0x0800)  // controlKey | optionKey
         onboardingDone = b("onboardingDone", false)
         showTimings = b("showTimings", false)
+        confirmMemories = b("confirmMemories", true)
+        memoriesEnabled = b("memoriesEnabled", true)
+        historyRetention = s("historyRetention").flatMap(HistoryRetention.init) ?? .year
     }
 
     public func voiceID(for engine: VoiceEngine) -> String? { voiceIDs[engine.rawValue] }
@@ -88,6 +112,19 @@ public final class FlitchSettings {
             defaults.set(value, forKey: "flitch.\(key)")
         } else {
             defaults.removeObject(forKey: "flitch.\(key)")
+        }
+    }
+}
+
+/// How long conversations are kept.
+public enum HistoryRetention: String, Codable, Sendable, CaseIterable {
+    case off, days90, year, forever
+
+    public var seconds: TimeInterval? {
+        switch self {
+        case .days90: 90 * 86_400
+        case .year: 365 * 86_400
+        case .off, .forever: nil
         }
     }
 }

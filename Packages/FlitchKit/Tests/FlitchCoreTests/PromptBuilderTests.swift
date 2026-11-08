@@ -52,3 +52,8 @@ func assertSnapshot(_ value: String, named name: String, file: String = #filePat
     let expected = try String(contentsOf: url, encoding: .utf8)
     #expect(value == expected, "Snapshot \(name) changed. Re-record with RECORD_SNAPSHOTS=1 if intended.")
 }
+
+@Test func promptMentionsTheCity() {
+    let prompt = PromptBuilder().systemPrompt(.init(persona: "P", userName: "Kevin", city: " Lyon "))
+    #expect(prompt.contains("Their name is Kevin.\nThey live in Lyon."))
+}

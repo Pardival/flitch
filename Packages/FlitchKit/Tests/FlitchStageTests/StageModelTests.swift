@@ -56,3 +56,49 @@ struct StageModelTests {
         #expect(StageModel.action(for: .nothingHeard) == nil)
     }
 }
+
+@MainActor
+struct MemoryChipTests {
+    @Test func chipShowsUntilAnsweredOrDismissed() {
+        let m = StageModel()
+        m.apply(.listening)
+        m.showMemory(.init(id: 7, fact: "Supports FC Barcelona", pending: true))
+        #expect(m.memoryChip?.fact == "Supports FC Barcelona")
+        m.clearMemory()
+        #expect(m.memoryChip == nil)
+        m.showMemory(.init(id: 8, fact: "x", pending: false))
+        m.apply(.dismissed)
+        #expect(m.memoryChip == nil)
+    }
+}
+
+struct DockGeometryTests {
+    @Test func estimatedWidthCountsPinnedRunningAndTrash() {
+        var p = DockPrefs()
+        p.tileSize = 48
+        p.persistentApps = ["a", "b", "c"]
+        let base = DockGeometry.estimatedWidth(prefs: p, runningApps: [], screenWidth: 2000)
+        let more = DockGeometry.estimatedWidth(
+            prefs: p, runningApps: ["a", "x", "com.apple.finder"], screenWidth: 2000)
+        // Typed constants: untyped float literals in #expect are too slow to type-check on CI.
+        let tile: CGFloat = 49.2
+        let expectedBase: CGFloat = 5 * tile + 14 + 20
+        let expectedMore: CGFloat = 6 * tile + 28 + 20
+        #expect(base == expectedBase)
+        #expect(more == expectedMore)
+        #expect(DockGeometry.estimatedWidth(prefs: p, runningApps: [], screenWidth: 100) == 92)
+    }
+
+    @Test func autohideRevealsAfterDelayAndHidesWhenLeaving() {
+        var r = AutohideReveal()
+        let screen = CGRect(x: 0, y: 0, width: 1000, height: 800)
+        func at(_ x: CGFloat, _ y: CGFloat, _ t: Double) -> Bool {
+            r.update(mouse: .init(x: x, y: y), screen: screen, dockHeight: 66, minX: 300, maxX: 700, delay: 0.5, now: t)
+        }
+        #expect(!at(500, 0, 0))
+        #expect(!at(500, 0, 0.3))
+        #expect(at(500, 1, 0.6))
+        #expect(at(500, 50, 0.7))  // still over the Dock
+        #expect(!at(500, 200, 0.8))  // left upwards
+    }
+}

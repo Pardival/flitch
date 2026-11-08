@@ -38,3 +38,19 @@ public final class VoiceRouter: SpeechOutput {
 
     public func stop() { player.stop() }
 }
+
+/// The orchestrator's speech-to-text; the app swaps the engine when settings change.
+public final class RecognizerRouter: SpeechRecognizing {
+    private let current: Mutex<any SpeechRecognizing>
+
+    public init(_ recognizer: any SpeechRecognizing) { current = Mutex(recognizer) }
+
+    public var recognizer: any SpeechRecognizing {
+        get { current.withLock { $0 } }
+        set { current.withLock { $0 = newValue } }
+    }
+
+    public func startSession(language: AppLanguage) async throws -> any RecognitionSession {
+        try await recognizer.startSession(language: language)
+    }
+}

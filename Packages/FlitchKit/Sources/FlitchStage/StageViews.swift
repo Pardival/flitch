@@ -85,7 +85,7 @@ struct BubbleView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        content
+        VStack(alignment: .leading, spacing: 10) { content }
             .font(.system(size: 15))
             .foregroundStyle(.primary)
             .padding(.horizontal, 18)
@@ -93,6 +93,10 @@ struct BubbleView: View {
             .frame(maxWidth: 380, alignment: .leading)
             .glassEffect(.regular, in: .rect(cornerRadius: 20))
             .onHover { model.hovered = $0 }
+    }
+
+    private var isListening: Bool {
+        if case .listening = model.bubble { true } else { false }
     }
 
     @ViewBuilder private var content: some View {
@@ -129,6 +133,8 @@ struct BubbleView: View {
                 .font(.caption).foregroundStyle(.secondary)
             }
             .frame(width: 340, alignment: .leading)
+        case .lingering(let text, let progress) where text.isEmpty:
+            ProgressView(value: progress).tint(FlitchColors.accentBright).controlSize(.mini).frame(width: 320)
         case .lingering(let text, let progress):
             Button(action: actions.openAnswer) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -155,9 +161,49 @@ struct BubbleView: View {
             }
             .frame(width: 320, alignment: .leading)
         }
+        if let chip = model.memoryChip, !isListening {
+            MemoryChipView(chip: chip, answer: { actions.answerMemory(chip, $0) })
+        }
         if !model.timings.isEmpty {
             Text(model.timings.joined(separator: " · ")).font(.caption2.monospaced()).foregroundStyle(.tertiary)
         }
+    }
+}
+
+/// "Remember this? Supports FC Barcelona ✓ ✗", or "Remembered" when confirmation is off.
+struct MemoryChipView: View {
+    let chip: StageModel.MemoryChip
+    let answer: (Bool) -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "brain.head.profile").foregroundStyle(FlitchColors.accent)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(chip.pending ? "Remember this?" : "Remembered", bundle: .module)
+                    .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                Text(chip.fact).font(.callout).lineLimit(2)
+            }
+            Spacer(minLength: 4)
+            if chip.pending {
+                Button {
+                    answer(true)
+                } label: {
+                    Image(systemName: "checkmark")
+                }
+                .buttonStyle(.borderedProminent).tint(FlitchColors.accent).controlSize(.small)
+                .accessibilityLabel(Text("Remember", bundle: .module))
+                Button {
+                    answer(false)
+                } label: {
+                    Image(systemName: "xmark")
+                }
+                .controlSize(.small)
+                .accessibilityLabel(Text("Forget", bundle: .module))
+            }
+        }
+        .padding(.horizontal, 10).padding(.vertical, 7)
+        .background(.quaternary.opacity(0.6), in: .rect(cornerRadius: 12))
+        .frame(width: 320, alignment: .leading)
     }
 }
 
