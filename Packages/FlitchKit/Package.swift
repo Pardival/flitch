@@ -26,7 +26,7 @@ let package = Package(
         .target(name: "FlitchCharacter", dependencies: ["FlitchCore"]),
         .target(name: "FlitchStage", dependencies: ["FlitchCore", "FlitchCharacter"]),
 
-        .testTarget(name: "FlitchCoreTests", dependencies: ["FlitchCore"]),
+        .testTarget(name: "FlitchCoreTests", dependencies: ["FlitchCore"], exclude: ["__Snapshots__"]),
         .testTarget(name: "FlitchProvidersTests", dependencies: ["FlitchProviders"], resources: [.copy("Fixtures")]),
         .testTarget(name: "FlitchVoiceTests", dependencies: ["FlitchVoice"]),
         .testTarget(name: "FlitchMemoryTests", dependencies: ["FlitchMemory"]),
