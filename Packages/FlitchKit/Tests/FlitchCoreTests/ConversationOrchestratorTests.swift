@@ -272,3 +272,21 @@ struct ConversationOrchestratorTests {
         #expect(log.closed.count == 1)
     }
 }
+
+@MainActor
+struct OrchestratorRetryTests {
+    @Test func retryAsksTheFailedQuestionAgain() async throws {
+        let llm = FakeLLM(replies: [[], FakeLLM.text("Né en 1769.")], error: URLError(.timedOut))
+        let t = ConversationOrchestratorTests(recognizer: FakeRecognizer("Napoléon ?"), llm: llm)
+        await t.ask()
+        #expect(t.log.events.contains(.error(.offline)))
+        #expect(t.orchestrator.lastFailedQuestion == "Napoléon ?")
+        #expect(t.orchestrator.conversation.isEmpty)
+        llm.error = nil
+        t.orchestrator.retry()
+        await t.orchestrator.waitForTurn()
+        await t.settle()
+        #expect(t.orchestrator.conversation == [.user("Napoléon ?"), .assistant("Né en 1769.")])
+        #expect(t.orchestrator.phase == .lingering)
+    }
+}

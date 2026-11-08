@@ -164,6 +164,7 @@ public final class ConversationOrchestrator {
     // MARK: - Turn
 
     private func startListening() {
+        lastFailedQuestion = nil
         generation += 1
         let gen = generation
         pressElapsed = .zero
@@ -226,12 +227,27 @@ public final class ConversationOrchestrator {
             return
         }
         emit(.transcribed(heard))
+        await respond(to: heard, generation: gen)
+    }
+
+    /// Asks the model again after a failure (bubble's "Try again").
+    public func retry() {
+        guard phase == .lingering, let question = lastFailedQuestion else { return }
+        lastFailedQuestion = nil
+        cancelTurn()
+        let gen = generation
+        turnTask = Task { [weak self] in await self?.respond(to: question, generation: gen) }
+    }
+
+    /// The question that failed and can be retried.
+    public private(set) var lastFailedQuestion: String?
+
+    private func respond(to heard: String, generation gen: Int) async {
         conversation.append(.user(heard))
         setPhase(.thinking)
         emit(.thinking)
 
         guard let provider = deps.provider() else {
-            conversation.removeLast()
             fail(FlitchError.noProvider, generation: gen)
             return
         }
@@ -294,7 +310,6 @@ public final class ConversationOrchestrator {
         let answer = answerSoFar.trimmingCharacters(in: .whitespacesAndNewlines)
         answerSoFar = ""
         guard !answer.isEmpty else {
-            conversation.removeLast()
             fail(FlitchError.other("empty answer"), generation: gen)
             return
         }
@@ -320,7 +335,11 @@ public final class ConversationOrchestrator {
 
     private func fail(_ error: any Error, generation gen: Int) {
         guard generation == gen, let flitchError = FlitchError(error) else { return }
+        FlitchLog.error(flitchError)
         stopPumps()
+        if conversation.last?.role == .user {
+            lastFailedQuestion = conversation.removeLast().text
+        }
         emit(.error(flitchError))
         startLingering()
     }

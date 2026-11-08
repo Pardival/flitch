@@ -136,6 +136,23 @@
           }
         }
       }
+    },
+    "right ⌥": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥ droite"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌥ derecha"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
