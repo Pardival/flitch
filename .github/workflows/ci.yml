@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+
+      - name: Cache SwiftPM
+        uses: actions/cache@v4
+        with:
+          path: |
+            Packages/FlitchKit/.build
+            ~/Library/Caches/org.swift.swiftpm
+          key: spm-${{ runner.os }}-${{ hashFiles('Packages/FlitchKit/Package.resolved') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Lint
+        run: ./scripts/lint.sh
+
+      - name: Test FlitchKit
+        working-directory: Packages/FlitchKit
+        run: swift test --parallel
+
+      - name: Build app
+        run: |
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild -project Flitch.xcodeproj -scheme Flitch -configuration Debug \
+            -derivedDataPath build/DerivedData CODE_SIGNING_ALLOWED=NO build
