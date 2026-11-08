@@ -6,7 +6,7 @@ import FlitchStage
 /// to check the otter and the bubble visually.
 @MainActor
 final class StageDemo {
-    private let stage: PeekStage
+    private let stage: any Stage
     private let model: StageModel
     private var timer: Timer?
     private var t: Double = 0
@@ -15,9 +15,13 @@ final class StageDemo {
     init(controller: AppController, corner: String) throws {
         model = controller.model
         let sprites = try SpriteSheet(character: controller.character)
-        stage = PeekStage(
-            model: model, sprites: sprites,
-            presentation: StagePresentation(corner: FlitchSettings.Corner(rawValue: corner) ?? .topLeft))
+        let presentation = StagePresentation(corner: FlitchSettings.Corner(rawValue: corner) ?? .topLeft)
+        // `--demo-stage dock`: the otter on the Dock (walks for a few seconds, then the conversation)
+        stage =
+            corner == "dock"
+            ? DockStage(model: model, sprites: sprites, presentation: presentation)
+            : PeekStage(model: model, sprites: sprites, presentation: presentation)
+        if corner == "dock" { t = -6 }
         let timer = Timer(timeInterval: 1.0 / 60, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }

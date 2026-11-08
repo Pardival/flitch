@@ -30,9 +30,20 @@ public struct StagePresentation: Sendable, Equatable {
     }
 }
 
+/// Where the otter lives: a corner (discreet mode) or the Dock.
+@MainActor
+public protocol Stage: AnyObject {
+    var actions: StageActions { get set }
+    func update(presentation: StagePresentation)
+    /// Call ~60 times per second. Returns whether the mouse is over the bubble or the otter.
+    @discardableResult func tick(_ dt: Double) -> Bool
+    /// Removes the stage's windows (mode change).
+    func tearDown()
+}
+
 /// Discreet mode: a transparent panel in a corner of the screen under the mouse.
 @MainActor
-public final class PeekStage {
+public final class PeekStage: Stage {
     public let model: StageModel
     public var actions = StageActions()
     public private(set) var presentation: StagePresentation
@@ -80,6 +91,11 @@ public final class PeekStage {
     }
 
     private func easeOut(_ t: Double) -> Double { 1 - pow(1 - t, 3) }
+
+    public func tearDown() {
+        panel?.orderOut(nil)
+        panel = nil
+    }
 
     // MARK: - Panel
 

@@ -1055,23 +1055,6 @@
         }
       }
     },
-    "On the Dock (soon)": {
-      "extractionState": "manual",
-      "localizations": {
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sur le Dock (bientôt)"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "En el Dock (pronto)"
-          }
-        }
-      }
-    },
     "On this Mac": {
       "extractionState": "manual",
       "localizations": {
@@ -2632,6 +2615,91 @@
           "stringUnit": {
             "state": "translated",
             "value": "¿Eliminar todas las conversaciones?"
+          }
+        }
+      }
+    },
+    "On the Dock": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sur le Dock"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En el Dock"
+          }
+        }
+      }
+    },
+    "She walks on your Dock, plays and naps. Click her to talk.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elle se promène sur ton Dock, joue et fait la sieste. Clique sur elle pour lui parler."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pasea por tu Dock, juega y duerme la siesta. Haz clic en ella para hablar."
+          }
+        }
+      }
+    },
+    "Allowed": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autorisé"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitido"
+          }
+        }
+      }
+    },
+    "Exact Dock width": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Largeur exacte du Dock"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ancho exacto del Dock"
+          }
+        }
+      }
+    },
+    "Optional: uses the Accessibility permission to read the Dock's size.": {
+      "extractionState": "manual",
+      "localizations": {
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Facultatif : utilise l'autorisation Accessibilité pour lire la taille du Dock."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcional: usa el permiso de Accesibilidad para leer el tamaño del Dock."
           }
         }
       }

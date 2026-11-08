@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "id": "otter",
   "name": "Flitch the otter",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "The Flitch contributors",
   "license": "CC-BY-4.0",
   "frame": {
@@ -70,6 +70,48 @@
       "frames": 4,
       "fps": 1.5,
       "loop": true
+    },
+    "walk": {
+      "file": "walk.png",
+      "frames": 6,
+      "fps": 10,
+      "loop": true
+    },
+    "look": {
+      "file": "look.png",
+      "frames": 6,
+      "fps": 3,
+      "loop": false
+    },
+    "juggle": {
+      "file": "juggle.png",
+      "frames": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "groom": {
+      "file": "groom.png",
+      "frames": 6,
+      "fps": 6,
+      "loop": true
+    },
+    "dance": {
+      "file": "dance.png",
+      "frames": 8,
+      "fps": 6,
+      "loop": true
+    },
+    "sleepBack": {
+      "file": "sleepBack.png",
+      "frames": 4,
+      "fps": 1.5,
+      "loop": true
+    },
+    "wake": {
+      "file": "wake.png",
+      "frames": 6,
+      "fps": 5,
+      "loop": false
     }
   },
   "behaviour": {
@@ -87,7 +129,8 @@
         0.2
       ]
     ],
-    "sleepAfter": 180
+    "sleepAfter": 180,
+    "walkSpeed": 18
   },
   "voice": {
     "animal": {

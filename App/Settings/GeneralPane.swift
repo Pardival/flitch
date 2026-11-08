@@ -19,17 +19,32 @@ struct GeneralPane: View {
             Section {
                 Picker("Mode", selection: $settings.mode) {
                     Text("Discreet").tag(FlitchSettings.Mode.discreet)
-                    Text("On the Dock (soon)").tag(FlitchSettings.Mode.dock)
+                    Text("On the Dock").tag(FlitchSettings.Mode.dock)
                 }
                 .pickerStyle(.segmented)
-                .disabled(true)  // Dock mode arrives in M5
-                LabeledContent {
-                    CornerPicker(corner: $settings.corner)
-                } label: {
-                    Text("Screen corner")
-                    Text("At the top, she comes down head first").font(.caption).foregroundStyle(.secondary)
+                if settings.mode == .discreet {
+                    LabeledContent {
+                        CornerPicker(corner: $settings.corner)
+                    } label: {
+                        Text("Screen corner")
+                        Text("At the top, she comes down head first").font(.caption).foregroundStyle(.secondary)
+                    }
+                    LabeledContent("Screen") { Text("The one with the mouse").foregroundStyle(.secondary) }
+                } else {
+                    Text("She walks on your Dock, plays and naps. Click her to talk.")
+                        .foregroundStyle(.secondary)
+                    LabeledContent {
+                        if DockTracker.accessibilityGranted {
+                            Label("Allowed", systemImage: "checkmark.circle.fill").foregroundStyle(FlitchColors.accent)
+                        } else {
+                            Button("Allow") { DockTracker.requestAccessibility() }
+                        }
+                    } label: {
+                        Text("Exact Dock width")
+                        Text("Optional: uses the Accessibility permission to read the Dock's size.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }
-                LabeledContent("Screen") { Text("The one with the mouse").foregroundStyle(.secondary) }
             }
             Section {
                 Toggle(isOn: $settings.useRightOption) {

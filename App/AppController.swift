@@ -24,7 +24,8 @@ final class AppController {
     /// Cached "About me", saved by settings › Memory.
     var profile = UserProfile()
     private var conversationStartedAt = Date()
-    private(set) var stage: PeekStage!
+    private(set) var stage: (any Stage)!
+    private var stageMode: FlitchSettings.Mode?
     private(set) var orchestrator: ConversationOrchestrator!
     private(set) var provider: (any LLMProvider)?
     private var timer: Timer?
@@ -50,8 +51,7 @@ final class AppController {
     }
 
     func start() throws {
-        let sprites = try SpriteSheet(character: character)
-        stage = PeekStage(model: model, sprites: sprites, presentation: presentation())
+        try makeStage()
         let deps = ConversationOrchestrator.Dependencies(
             recognizer: recognizer,
             speech: voice,
@@ -145,10 +145,33 @@ final class AppController {
         }
     }
 
+    /// Corner peek or Dock walker, from the settings.
+    private func makeStage() throws {
+        guard stageMode != settings.mode else { return }
+        stage?.tearDown()
+        let sprites = try SpriteSheet(character: character)
+        stage =
+            settings.mode == .dock
+            ? DockStage(model: model, sprites: sprites, presentation: presentation())
+            : PeekStage(model: model, sprites: sprites, presentation: presentation())
+        stageMode = settings.mode
+        if orchestrator != nil { wireActions() }
+    }
+
+    private func otterClicked() {
+        guard settings.mode == .dock else { return openAnswerCard() }
+        // on the Dock, clicking her is the way to talk (click, speak, click to send)
+        switch orchestrator.phase {
+        case .listening: orchestrator.shortcutUp()
+        case .lingering where !model.answer.isEmpty: openAnswerCard()
+        default: orchestrator.shortcutDown()
+        }
+    }
+
     private func wireActions() {
         var actions = StageActions()
         actions.openAnswer = { [weak self] in self?.openAnswerCard() }
-        actions.otterClicked = { [weak self] in self?.openAnswerCard() }
+        actions.otterClicked = { [weak self] in self?.otterClicked() }
         actions.errorAction = { [weak self] action in
             guard let self else { return }
             switch action {
@@ -197,7 +220,7 @@ final class AppController {
         withObservationTracking {
             _ = (settings.providerID, settings.voiceEngine, settings.voiceIDs, settings.voiceSpeed)
             _ = (settings.corner, settings.useRightOption, settings.fallbackKeyCode, settings.fallbackModifiers)
-            _ = (settings.showTimings, settings.speechEngine, settings.historyRetention)
+            _ = (settings.showTimings, settings.speechEngine, settings.historyRetention, settings.mode)
         } onChange: { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
@@ -205,6 +228,7 @@ final class AppController {
                 self.refreshVoice()
                 self.refreshRecognizer()
                 self.applyRetention()
+                try? self.makeStage()
                 self.restartHotkey()
                 self.stage.update(presentation: self.presentation())
                 self.model.setTimingsVisible(self.settings.showTimings)
