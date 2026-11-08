@@ -151,3 +151,40 @@ struct CloudPresetTests {
         #expect(json?["model"] as? String == preset.models.balanced)
     }
 }
+
+struct OpenRouterWebSearchTests {
+    @Test func enablesTheServerToolAndReadsCitations() async throws {
+        let host = uniqueHost()
+        var preset = try #require(ProviderCatalog.preset("openrouter"))
+        preset.baseURL = URL(string: "https://\(host)/api/v1")!
+        let stream = Data(
+            """
+            data: {"choices":[{"index":0,"delta":{"content":"Aujourd'hui, "}}]}
+
+            data: {"choices":[{"index":0,"delta":{"content":"il pleut.","annotations":[{"type":"url_citation","url_citation":{"url":"https://meteo.example/paris","title":"Météo Paris"}}]}}]}
+
+            data: {"choices":[{"index":0,"delta":{},"finish_reason":"stop","message":{"annotations":[{"type":"url_citation","url_citation":{"url":"https://meteo.example/paris","title":"Météo Paris"}}]}}]}
+
+            data: [DONE]
+
+            """.utf8)
+        let session = StubURLProtocol.session(host: host) { _ in .init(body: stream) }
+        let a = OpenAICompatibleAdapter(preset: preset, apiKey: "sk-or-123456", http: HTTPTransport(session: session))
+        #expect(a.capabilities.contains(.webSearch))
+        let events = try await collect(a.stream(LLMRequest(system: "", messages: [.user("Météo ?")], webSearch: true)))
+        let citations = events.compactMap { if case .citation(let c) = $0 { c } else { nil } }
+        #expect(citations == [Citation(title: "Météo Paris", url: URL(string: "https://meteo.example/paris")!)])
+        let body =
+            try JSONSerialization.jsonObject(with: StubURLProtocol.requests(host: host).first?.body ?? Data())
+            as? [String: Any]
+        let tools = body?["tools"] as? [[String: Any]]
+        #expect(tools?.first?["type"] as? String == "openrouter:web_search")
+    }
+
+    @Test func noToolWhenSearchIsOff() throws {
+        let a = OpenAICompatibleAdapter(preset: ProviderCatalog.preset("openrouter")!, apiKey: "k")
+        let req = try a.makeRequest(LLMRequest(system: "", messages: [], webSearch: false), model: "m")
+        let body = try JSONSerialization.jsonObject(with: req.httpBody!) as? [String: Any]
+        #expect(body?["tools"] == nil)
+    }
+}

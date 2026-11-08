@@ -30,6 +30,8 @@ public struct ProviderPreset: Codable, Sendable, Hashable, Identifiable {
     public var local: Bool?
     /// Where users create an API key.
     public var keyURL: URL?
+    /// Server tool type that turns on web search (e.g. "openrouter:web_search").
+    public var webSearchTool: String?
 
     public var providerCapabilities: ProviderCapabilities {
         var c: ProviderCapabilities = []

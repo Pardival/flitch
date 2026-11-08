@@ -46,7 +46,9 @@ public struct VoicePipeline: SpeechOutput {
             var started: [Task<AudioClip, Error>] = []
             do {
                 for try await sentence in sentences {
-                    let audio = Task { try await synthesizer.synthesize(sentence, language: language) }
+                    let spoken = SpokenText.clean(sentence)
+                    guard !spoken.isEmpty else { continue }
+                    let audio = Task { try await synthesizer.synthesize(spoken, language: language) }
                     started.append(audio)
                     jobsIn.yield((sentence, audio))
                 }

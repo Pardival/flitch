@@ -12,13 +12,15 @@
         "precise": "anthropic/claude-opus-5.5"
       },
       "capabilities": [
-        "tools"
+        "tools",
+        "webSearch"
       ],
       "headers": {
         "HTTP-Referer": "https://github.com/Pardival/flitch",
         "X-Title": "Flitch"
       },
-      "keyURL": "https://openrouter.ai/keys"
+      "keyURL": "https://openrouter.ai/keys",
+      "webSearchTool": "openrouter:web_search"
     },
     {
       "id": "xai",
