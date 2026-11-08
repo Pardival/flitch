@@ -144,7 +144,9 @@ final class AppleRecognitionSession: RecognitionSession, @unchecked Sendable {
                     continue
                 }
                 if converter == nil { converter = AudioFormatConverter(from: buffer.format, to: format) }
-                if let converted = converter?.convert(buffer) { inputContinuation.yield(AnalyzerInput(buffer: converted)) }
+                if let converted = converter?.convert(buffer) {
+                    inputContinuation.yield(AnalyzerInput(buffer: converted))
+                }
             }
             inputContinuation.finish()
         }
