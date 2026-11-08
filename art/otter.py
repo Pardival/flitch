@@ -159,12 +159,12 @@ def draw_silhouette(c: Canvas, dy=0):
             "cream", outline=False, shade="creamD")
     # webbed feet
     for fx in (11.5, 20.5):
-        c.blob(fx, 30.4, 2.5, 1.3, "furD")
+        c.blob(fx, 30.4 + min(0, dy), 2.5, 1.3, "furD")  # feet leave the ground when jumping
 
 
-def draw_ears(c: Canvas, dy=0):
-    for ex in (8.6, 23.4):
-        c.blob(ex, 5.6 + dy, 1.7, 1.6, "fur", shade="furD")
+def draw_ears(c: Canvas, dy=0, twitch=0):
+    for k, ex in enumerate((8.6, 23.4)):
+        c.blob(ex, 5.6 + dy - (twitch if k == 1 else 0), 1.7, 1.6, "fur", shade="furD")
 
 
 def draw_face(c: Canvas, dy=0, eyes="open", mouth="smile", blush=True):
@@ -243,7 +243,7 @@ def draw_phones(c: Canvas, dy=0, glow=False):
             c.set(gx, int(hy) - 1, "glow"); c.set(gx, int(hy), "glow")
 
 
-def draw_arms(c: Canvas, style="hold", dy=0):
+def draw_arms(c: Canvas, style="hold", dy=0, lift=0.0, wave=0.0):
     k = dict(shade="furD")
     L = lambda a, b, r=1.4: c.capsule((a[0], a[1] + dy), (b[0], b[1] + dy), r, "fur", **k)
     if style == "hold":       # paws held together under the chin (classic otter)
@@ -253,14 +253,14 @@ def draw_arms(c: Canvas, style="hold", dy=0):
     elif style == "up":
         L((10.6, 18.0), (5.8, 13.0), 1.5); L((21.4, 18.0), (26.2, 13.0), 1.5)
     elif style == "wave":
-        c.blob(14.0, 20.2 + dy, 1.8, 1.3, "furD", outline=False, shade="out"); L((21.4, 18.0), (26.4, 13.2), 1.5)
+        c.blob(14.0, 20.2 + dy, 1.8, 1.3, "furD", outline=False, shade="out"); L((21.4, 18.0), (26.4 + wave, 13.2 - abs(wave) * 0.4), 1.5)
         c.set(28, 11 + dy, "out"); c.set(29, 14 + dy, "out")
     elif style == "tool":     # shell on the tummy, pebble raised: about to tap
         c.blob(16.0, 24.4 + dy, 3.6, 2.4, "shell", shade="shellD")
         for x in (14, 16, 18):
             c.set(x, 23 + dy, "shellD")
-        c.blob(23.8, 13.6 + dy, 2.6, 2.2, "stone", shade="stoneD", light="stoneL")
-        L((11.6, 19.6), (13.4, 23.4)); L((21.0, 19.0), (23.4, 15.6))
+        c.blob(23.8 - lift * 0.6, 13.6 + dy + lift, 2.6, 2.2, "stone", shade="stoneD", light="stoneL")
+        L((11.6, 19.6), (13.4, 23.4)); L((21.0, 19.0), (23.4 - lift * 0.6, 15.6 + lift))
     elif style == "edge":     # both paws gripping the screen edge (peek)
         c.blob(9.0, 22.4 + dy, 2.3, 1.7, "fur", shade="furD")
         c.blob(23.0, 22.4 + dy, 2.3, 1.7, "fur", shade="furD")
@@ -278,15 +278,16 @@ def draw_note(c: Canvas, x, y):
     c.rect(x, y + 3, x + 1, y + 4, "note")
 
 
-def otter(eyes="open", mouth="smile", arms="hold", glow=False, dy=0, tail=True, curl=0.0, blush=True):
+def otter(eyes="open", mouth="smile", arms="hold", glow=False, dy=0, tail=True, curl=0.0, blush=True,
+          twitch=0, lift=0.0, wave=0.0):
     c = Canvas()
     if tail:
-        draw_tail(c, curl=curl)
-    draw_ears(c, dy)
+        draw_tail(c, dy=min(0, dy), curl=curl)
+    draw_ears(c, dy, twitch)
     draw_silhouette(c, dy)
     draw_face(c, dy, eyes, mouth, blush)
     draw_phones(c, dy, glow)
-    draw_arms(c, arms, dy)
+    draw_arms(c, arms, dy, lift, wave)
     return c
 
 
@@ -381,29 +382,47 @@ if __name__ == "__main__":
 
 
 # ---------------------------------------------------------------- character pack export
-def export_pack(pack_dir: Path):
-    """Writes the sprite strips of `Characters/otter`. v0: one or two frames per animation;
-    proper multi-frame animations come with ticket #21."""
-    anims = {
-        "idle": [pose("idle"), otter(eyes="blink")],
-        "listen": [pose("listen")],
-        "think": [pose("think")],
+def animations():
+    """Every animation of the otter pack, frame by frame. Discreet mode shows the upper half of these
+    frames (the stage slides them in from the screen edge, flipped head-down for the top corners)."""
+    T = 6  # "tap": pebble down on the shell
+    return {
+        # breathing + a blink every few seconds
+        "idle": [otter(), otter(), otter(curl=0.15), otter(curl=0.15), otter(eyes="blink"), otter()],
+        # headphones pulse, right ear twitches
+        "listen": [otter(eyes="sparkle", mouth="o", arms="cup", glow=g, twitch=t)
+                   for g, t in ((True, 0), (False, 0), (True, 1), (False, 0))],
+        # raises the pebble and taps the shell
+        "think": [otter(eyes="up", mouth="calm", arms="tool", lift=l) for l in (0, -1, -2, -1, 1, 3, 1, 0)][:7]
+                 + [otter(eyes="blink", mouth="calm", arms="tool", lift=0)],
+        # ordered by mouth openness: the level picks the frame
         "talk": [otter(mouth="calm"), otter(mouth="o"), otter(mouth="open"), otter(mouth="big")],
-        "happy": [pose("happy")],
-        "wave": [pose("wave")],
-        "sleep": [pose("sleep")],
-        "peek": [peek()],
+        # little jump of joy
+        "happy": [otter(eyes="happy", mouth="big", arms="up", dy=d, curl=0.6) for d in (0, -1, -3, -3, -1, 0)],
+        "wave": [otter(eyes="happy", mouth="smile", arms="wave", wave=w) for w in (0, 1.5, 0, -1.5)],
+        "sleep": [otter(eyes="closed", mouth="sleep", dy=d) for d in (1, 1, 2, 2)],
     }
+
+
+def export_pack(pack_dir: Path, preview_dir: Path):
     sprites = pack_dir / "sprites"
     sprites.mkdir(parents=True, exist_ok=True)
-    for name, frames in anims.items():
+    for old in sprites.glob("*.png"):
+        old.unlink()
+    preview_dir.mkdir(parents=True, exist_ok=True)
+    counts = {}
+    for name, frames in animations().items():
         strip = Image.new("RGBA", (W * len(frames), H), (0, 0, 0, 0))
         for i, f in enumerate(frames):
             strip.alpha_composite(f.image(), (i * W, 0))
         strip.save(sprites / f"{name}.png")
-    return {k: len(v) for k, v in anims.items()}
+        big = [Image.alpha_composite(Image.new("RGBA", (W, H), (246, 244, 240, 255)), f.image())
+               .resize((W * 6, H * 6), Image.NEAREST).convert("P") for f in frames]
+        big[0].save(preview_dir / f"{name}.gif", save_all=True, append_images=big[1:], duration=160, loop=0)
+        counts[name] = len(frames)
+    return counts
 
 
 if __name__ == "__main__" and "--pack" in sys.argv:
-    counts = export_pack(Path(__file__).resolve().parent.parent / "Characters" / "otter")
-    print(counts, file=sys.stderr)
+    root = Path(__file__).resolve().parent
+    print(export_pack(root.parent / "Characters" / "otter", root / "preview" / "anim"), file=sys.stderr)
