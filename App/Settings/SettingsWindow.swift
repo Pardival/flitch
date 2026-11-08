@@ -7,7 +7,7 @@ import SwiftUI
 @MainActor
 final class SettingsWindow {
     enum Tab: String, CaseIterable, Identifiable {
-        case general, brain, voice, personality
+        case general, brain, voice, personality, memory, history
         var id: String { rawValue }
 
         var title: LocalizedStringKey {
@@ -16,6 +16,8 @@ final class SettingsWindow {
             case .brain: "Brain"
             case .voice: "Voice"
             case .personality: "Personality"
+            case .memory: "Memory"
+            case .history: "History"
             }
         }
 
@@ -25,6 +27,8 @@ final class SettingsWindow {
             case .brain: "brain.head.profile.fill"
             case .voice: "waveform"
             case .personality: "face.smiling.inverse"
+            case .memory: "brain.fill"
+            case .history: "clock.arrow.circlepath"
             }
         }
 
@@ -34,6 +38,8 @@ final class SettingsWindow {
             case .brain: .indigo
             case .voice: .orange
             case .personality: .pink
+            case .memory: .teal
+            case .history: .blue
             }
         }
     }
@@ -92,6 +98,8 @@ struct SettingsView: View {
             case .brain: BrainPane(connector: app.connector, settings: app.settings)
             case .voice: VoicePane(app: app)
             case .personality: PersonalityPane(settings: app.settings)
+            case .memory: MemoryPane(app: app)
+            case .history: HistoryPane(app: app)
             }
         }
         .frame(minWidth: 720, minHeight: 500)
